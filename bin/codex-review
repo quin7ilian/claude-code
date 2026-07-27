@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+# codex-review — run a Codex code review of a repository change set against a brief.
+#
+# The review gate for coding deliverables: the caller writes a self-contained brief
+# (task, spec, acceptance criteria, exact diff range), this script appends the reviewer
+# contract and runs the Codex CLI over the repository in a kernel-enforced read-only
+# sandbox. Codex inherits the user's configured model and reasoning effort; no model or
+# effort flags are passed here. Runs on the ChatGPT subscription — no pay-per-token key.
+#
+# The review ends with a `verdict: PASS` or `verdict: NEEDS_CHANGES` line. A missing,
+# failed, or empty review exits non-zero — an unavailable reviewer is NEVER a pass.
+#
+# Usage:
+#   codex-review --brief /abs/path/brief.md --repo /abs/path/repo [--out /abs/path/review.md]
+set -euo pipefail
+
+BRIEF="" REPO="" OUT=""
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --brief) BRIEF="${2:-}"; shift 2 ;;
+    --repo)  REPO="${2:-}";  shift 2 ;;
+    --out)   OUT="${2:-}";   shift 2 ;;
+    *) echo "codex-review: unknown argument '$1'" >&2; exit 2 ;;
+  esac
+done
+
+if [ -z "$BRIEF" ] || [ -z "$REPO" ]; then
+  echo "usage: codex-review --brief FILE --repo DIR [--out FILE]" >&2
+  exit 2
+fi
+if [ ! -f "$BRIEF" ]; then
+  echo "codex-review: brief file not found: $BRIEF" >&2
+  exit 2
+fi
+if [ ! -d "$REPO" ]; then
+  echo "codex-review: repository directory not found: $REPO" >&2
+  exit 2
+fi
+if ! command -v codex >/dev/null 2>&1; then
+  echo "codex-review: codex CLI not found on PATH — review NOT run; this is NOT a pass" >&2
+  exit 1
+fi
+
+CONTRACT='Act as a skeptical, evidence-driven code reviewer. Start with the specified git diff and
+changed files. Before judging anything, read the repository'"'"'s instruction files — AGENTS.md and
+CLAUDE.md at the repository root and in every directory the change touches, plus any files they
+import. They are binding: a change that violates them is a finding regardless of whether it is
+otherwise correct, and they outrank your own general practice. Expand only into directly touched
+callers, callees, interfaces, library contracts, and tests when needed to prove or disprove a
+concrete concern. Do not map or summarize the whole repository.
+
+Challenge the implementation'"'"'s assumptions. Check the change against the task, specification,
+acceptance criteria, and repository instructions. Pressure-test correctness, edge cases, failure
+handling, security boundaries, compatibility, concurrency/state behavior where relevant, and
+whether the tests genuinely prove the behavior rather than merely mirror the implementation.
+Run the smallest relevant tests or static checks that are safe in a read-only checkout. If a check
+requires repository writes, report the exact check that could not run and why. Never modify the
+working tree and never read secrets.
+
+Return no more than 8 high-confidence, actionable findings. Omit style nits and speculative issues.
+For each finding provide severity, file:line, evidence, the violated requirement or concrete impact,
+and a specific fix or verification step. Separate confirmed defects from questions. End with:
+(1) verdict: PASS or NEEDS_CHANGES, (2) tests/checks run and results, (3) assumptions challenged,
+(4) the narrow scope inspected, (5) repository-instruction compliance: name every AGENTS.md/CLAUDE.md
+file you read by path and state, rule by rule for the ones this change engages, whether it complies —
+report each violation as a finding. If you found no instruction files, say so explicitly. Omitting
+this section makes the review incomplete. If there are no findings, say so plainly; do not invent
+issues.'
+
+PROMPT="$(cat "$BRIEF")
+
+## Reviewer contract
+
+$CONTRACT"
+
+ERR="$(mktemp "${TMPDIR:-/tmp}/codex-review.XXXXXX.stderr")"
+trap 'rm -f "$ERR"' EXIT
+
+# </dev/null: never block on interactive auth/TTY. The read-only sandbox lets Codex read
+# the repository and run safe checks while kernel-enforcement prevents any write.
+set +e
+if [ -n "$OUT" ]; then
+  codex exec --skip-git-repo-check \
+    --sandbox read-only \
+    -C "$REPO" \
+    "$PROMPT" </dev/null >"$OUT" 2>"$ERR"
+  STATUS=$?
+  SIZE=$(wc -c <"$OUT" 2>/dev/null || echo 0)
+else
+  OUTPUT="$(codex exec --skip-git-repo-check \
+    --sandbox read-only \
+    -C "$REPO" \
+    "$PROMPT" </dev/null 2>"$ERR")"
+  STATUS=$?
+  SIZE=${#OUTPUT}
+  printf '%s\n' "$OUTPUT"
+fi
+set -e
+
+if [ "$STATUS" -ne 0 ] || [ "$SIZE" -eq 0 ]; then
+  echo "codex-review: review FAILED (exit $STATUS, ${SIZE} bytes) — this is NOT a pass" >&2
+  sed -n '1,10p' "$ERR" >&2 || true
+  exit 1
+fi
