@@ -208,12 +208,13 @@ available and the easiest to pollute.
 - Do not ask for approval of the reconciliation. Designating the directive authorizes the cleanup
   it implies; a second approval round is friction. Never alter the directive set as a side effect
   of unrelated work.
-- Report the delta in the rules' own words, never as identifiers. Quote each directive by its name
-  — the rule itself — and state what changed in behavior: what the new directive now requires,
-  what each removed one used to require, and why it no longer stands on its own (superseded,
-  contradicted, or absorbed into the new one, naming which). Someone who has never seen the bank
-  should finish the report knowing what the agent will now do differently. A list of IDs is not a
-  report.
+- Report every change to the set in the rules' own words, never as identifiers — a creation with
+  nothing merged or deleted is still a change and still gets described. Quote each directive by
+  its name, the rule itself, and state what changed in behavior: what a new directive now requires
+  of every session, what each removed one used to require, and why it no longer stands on its own
+  (superseded, contradicted, or absorbed into another, naming which). Someone who has never seen
+  the bank should finish the report knowing what the agent will now do differently. "Directive
+  created (a8426b81)" is not a report; identifiers belong nowhere in it.
 - Write for the injection format: the `name` must be the complete rule in imperative form, because
   it is the only part a session sees; the `content` carries the reasoning, the originating
   incident, and how to apply it.
