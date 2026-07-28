@@ -123,7 +123,11 @@ bash -n apply.sh bin/codex-review
 python3 -m py_compile scripts/*.py
 ```
 
+`.github/workflows/tests.yml` runs exactly these on every push and pull request, across Python
+3.10–3.14 (3.10 is the floor: the `Transport` alias evaluates a `X | None` union at runtime). Keep
+the workflow and this list in step; if a check is worth running locally it is worth running in CI.
+
 For transcript-parser changes, also dry-run against a real session transcript
 (`scripts/retain_hindsight.py --dry-run`, see README.md) and confirm: user prose in, tool noise out,
 final answers only. For installer changes, run `./apply.sh` twice — the second run must change
-nothing.
+nothing. Neither is automatable in CI — both need a real transcript or a real home directory.

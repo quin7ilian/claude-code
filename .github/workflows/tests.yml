@@ -1,0 +1,34 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The hooks run on whatever python3 the machine ships, so the supported range is
+        # tested rather than assumed. 3.10 is the floor: `Transport` builds a `X | None`
+        # union at runtime, which older versions cannot evaluate.
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Byte-compile the scripts
+        run: python3 -m py_compile scripts/*.py
+
+      - name: Check shell syntax
+        run: bash -n apply.sh bin/codex-review
+
+      - name: Run the test suite
+        run: python3 -m unittest discover -s tests --verbose
