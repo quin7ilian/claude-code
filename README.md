@@ -19,8 +19,8 @@ Everything is version-controlled so the machine is reproducible. `apply.sh` inst
   execute and retrieve.
 - **Codex is the second prior.** Gated skills for review, research, and ideation — plus the
   mandatory review gate inside the implementation workflow.
-- **Repository instructions are enforced**, including `AGENTS.md`, which Claude Code does not load
-  natively.
+- **Repository instructions are enforced.** `AGENTS.md` is not loaded natively by Claude Code, so a
+  hook announces it and a write gate requires it — and your standing rules — to have been read.
 
 ## The split
 
@@ -57,8 +57,9 @@ blocks a turn.
 **Primer.** A `SessionStart` hook injects baseline memory so it never depends on the model choosing
 to recall. It has two sections:
 
-- **Standing rules and preferences** — the bank's directives verbatim, plus a dedicated rules
-  recall, so pinned behavior never competes with topical facts for ranking slots.
+- **Standing rules and preferences** — the bank's directives, verbatim. Directives only: a recall
+  over rule-shaped language returns notes *about* the rules as readily as the rules themselves, so a
+  preference reaches the gate by being promoted into a directive.
 - **Project context** — scoped to the current project.
 
 The primer is a starting point, not the extent of memory: global guidance also requires a targeted
@@ -74,8 +75,9 @@ header carries the generation time.
 (`org/repo` from the working directory, never physical paths, so entities survive machine
 migrations). Because recall's server-side tag filter does not currently restrict results, the primer
 filters the project section client-side — dropping other projects' facts, keeping unattributed ones,
-and matching legacy path-shaped names. Rules recall stays unscoped: a preference stated in one
-repository applies everywhere.
+and matching legacy path-shaped names. The project section cannot come from `reflect`: synthesis
+returns prose with no per-fact provenance to filter, and `reflect`'s tag filter is equally
+non-restrictive.
 
 **Policy.** Local auto memory is disabled (`autoMemoryEnabled: false`, enforced on every settings
 merge) because local fact files go stale silently while Hindsight reconciles server-side. The only
@@ -106,14 +108,52 @@ PASS/NEEDS_CHANGES verdict. An unavailable reviewer is a blocker, never a pass.
 
 ## Repository instructions
 
-Claude Code auto-loads `CLAUDE.md` but not `AGENTS.md`, the cross-vendor standard. Enforcement has
-four legs, so a repository's rules reach every agent that touches it:
+Claude Code auto-loads `CLAUDE.md` but not `AGENTS.md`, the cross-vendor standard. Enforcement is
+layered, so a repository's rules reach every agent that touches it:
 
-- A `SessionStart` hook injects the repo's `AGENTS.md`, giving it the ambient status `CLAUDE.md` has
-  natively (skipped when a root `CLAUDE.md` already imports it).
+- A `SessionStart` hook announces the repo's `AGENTS.md` — path, section headings, and notice that
+  writes are gated (skipped when a root `CLAUDE.md` already imports it). It points rather than
+  inlines: rules that merely sit in context get skimmed, rules an agent reads get followed.
+- A `PreToolUse` gate denies `Edit`/`Write`/`MultiEdit`/`NotebookEdit` until the acting agent has
+  read **both** the repository's `AGENTS.md` and its standing-rules document — the primer's rules
+  section, materialized to disk so it can be read rather than skimmed. It fires inside subagents too,
+  judged against each agent's own transcript, so a parent's read never satisfies a child.
 - Subagent contracts read the instruction files as step one.
 - Every dispatched brief names them by absolute path and requires a compliance statement back.
 - Every Codex review verifies the change against them and reports violations as findings.
+
+### What satisfies the gate
+
+The two documents are judged on different terms.
+
+For **`AGENTS.md`**, a read counts when it used the `Read` tool on the whole file (no
+`offset`/`limit`), its result is correlated to that call by `tool_use_id`, its content matches the
+file exactly — so editing `AGENTS.md` re-gates everyone — and it is still effectively in context.
+
+For the **standing-rules document**, presence of a read is enough. Requiring an exact content match
+would re-gate an agent every time a background refresh landed, through no fault of its own. When the
+gate is about to ask for it, a refresh is spawned first, so the read it prompts returns current
+memory rather than whatever was recalled at session start. A project with no rules document — no
+memory store configured, or a first session — is not gated on it at all.
+
+"Still in context" is measured in **context tokens**, not transcript bytes: tool output inflates a
+transcript far more than it occupies the model's context, and it is the context the agent reasons
+over. The hook reads the `usage` figures in the transcript, denies once the context has grown more
+than 200,000 tokens since the read, and treats compaction as immediately stale — an explicit
+compact-summary record, or any dip in context size, means the rules were discarded rather than
+merely pushed back.
+
+Evidence is the agent's own transcript — the reads it actually performed, each correlated to its
+result. Nothing accumulates on disk, and the record cannot drift out of sync with what happened.
+
+### When it stands aside
+
+The gate fails open wherever it cannot make an honest judgment, because a gate that deadlocks a
+session is worse than the problem it solves: no `AGENTS.md`; an unreadable or non-UTF8 transcript;
+an unidentifiable write target; instruction files with CRLF endings or too long for one `Read`
+(either would make an exact match impossible); a truncated scan window, where a still-current read
+may sit just outside it; and a read whose result carried no rendered content, which re-reading
+could not turn into proof. `CLAUDE_SKIP_AGENTS_GATE=1` disables it outright.
 
 ## Codex skills
 

@@ -41,12 +41,23 @@ involved, decisions already made, anything from the spec the item depends on, an
 item's tier with its review requirement (`complex` → per-item review; `trivial`/
 `standard` → review deferred to the batch).
 
-**Every brief names the repository's instruction files by absolute path** — `AGENTS.md`,
-`CLAUDE.md`, and any covering the directories in scope — and requires reading them before
-the first edit and confirming compliance in the summary. Locate them yourself before the
-first dispatch (they are not reliably in a subagent's context) and re-state any rule the
-item is likely to brush against. A returned summary that is silent about them is
-incomplete: ask before accepting the item.
+**Every brief opens with this block, filled in — copy it, do not paraphrase it:**
+
+```text
+## Repository instructions (binding)
+
+Read these in full with the Read tool before your first edit:
+- <absolute path to AGENTS.md>
+- <absolute path to CLAUDE.md, and any covering the directories in scope>
+
+They outrank general practice and anything this brief leaves unsaid. File writes are
+gated on having read them. State in your summary which you read and how the change
+complies, naming the specific rules it engages.
+```
+
+Locate the files yourself before the first dispatch — they are not in a subagent's
+context. A returned summary that is silent about them is incomplete: send it back rather
+than accepting the item.
 
 For `standard` items, add a short approach note when you hold non-obvious context the
 coder cannot cheaply rediscover — entry points, the existing pattern to follow, an

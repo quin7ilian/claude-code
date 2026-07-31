@@ -22,6 +22,8 @@ SCRIPT = Path("/home/user/.claude/hooks/retain_hindsight.py")
 PRIMER = Path("/home/user/.claude/hooks/prime_hindsight.py")
 INSTRUCTIONS = Path("/home/user/.claude/hooks/inject_repo_instructions.py")
 INSTRUCTIONS_CMD = f"/usr/bin/python3 {INSTRUCTIONS}"
+GATE = Path("/home/user/.claude/hooks/gate_repo_instructions.py")
+GATE_CMD = f"/usr/bin/python3 {GATE}"
 
 
 def owned_command() -> str:
@@ -184,6 +186,8 @@ class SettingsConfigTests(unittest.TestCase):
             PRIMER,
             INSTRUCTIONS_CMD,
             INSTRUCTIONS,
+            GATE_CMD,
+            GATE,
         )
 
         session_start = [
@@ -204,6 +208,14 @@ class SettingsConfigTests(unittest.TestCase):
         ]
         self.assertEqual(session_end, [owned_command(), owned_primer_command()])
 
+        # The write gate is registered on PreToolUse for the writing tools.
+        gate_groups = merged["hooks"]["PreToolUse"]
+        self.assertEqual(len(gate_groups), 1)
+        self.assertEqual(gate_groups[0]["matcher"], "Edit|Write|MultiEdit|NotebookEdit")
+        self.assertEqual(
+            [h.get("command") for h in gate_groups[0]["hooks"]], [GATE_CMD]
+        )
+
     def test_merge_is_idempotent(self) -> None:
         def merge(document: dict) -> str:
             merge_settings(
@@ -214,6 +226,8 @@ class SettingsConfigTests(unittest.TestCase):
                 PRIMER,
                 INSTRUCTIONS_CMD,
                 INSTRUCTIONS,
+                GATE_CMD,
+                GATE,
             )
             return json.dumps(document, sort_keys=True)
 

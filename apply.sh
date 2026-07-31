@@ -143,12 +143,15 @@ link_owned_path "$REPO/scripts/retain_hindsight.py" "$CLAUDE_HOME/hooks/retain_h
 link_owned_path "$REPO/scripts/prime_hindsight.py" "$CLAUDE_HOME/hooks/prime_hindsight.py"
 link_owned_path "$REPO/scripts/inject_repo_instructions.py" \
   "$CLAUDE_HOME/hooks/inject_repo_instructions.py"
+link_owned_path "$REPO/scripts/gate_repo_instructions.py" \
+  "$CLAUDE_HOME/hooks/gate_repo_instructions.py"
 python3 "$REPO/scripts/configure_settings.py" \
   --settings "$CLAUDE_HOME/settings.json" \
   --python "$(command -v python3)" \
   --script "$CLAUDE_HOME/hooks/retain_hindsight.py" \
   --primer-script "$CLAUDE_HOME/hooks/prime_hindsight.py" \
   --instructions-script "$CLAUDE_HOME/hooks/inject_repo_instructions.py" \
+  --gate-script "$CLAUDE_HOME/hooks/gate_repo_instructions.py" \
   --env-file "$CC_ENV" \
   --state-dir "$CLAUDE_HOME/hindsight-retention"
 

@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""Merge the repository-owned memory hooks into Claude Code settings.json.
+"""Merge the repository-owned session hooks into Claude Code settings.json.
 
-Manages one retention-script entry each under hooks.Stop and hooks.SessionEnd, one
-memory-primer entry under hooks.SessionStart, plus the MAX_MCP_OUTPUT_TOKENS env default. Everything else in the settings file — foreign hooks,
-unknown keys, user tuning — is preserved byte-for-byte. Legacy handlers left behind by
-retired tooling (cc-retain, cc-reconcile-nudge) are removed from every hook event they
-were registered under. Idempotent: re-running with the same inputs leaves the file
-untouched.
+Manages the retention script under hooks.Stop and hooks.SessionEnd, the memory primer
+under hooks.SessionStart and hooks.SessionEnd, the instruction announcement under
+hooks.SessionStart, and the write gate under hooks.PreToolUse — plus the
+MAX_MCP_OUTPUT_TOKENS env default and the auto-memory switch.
+
+Everything else in the settings file — foreign hooks, unknown keys, user tuning — is
+preserved byte-for-byte. Handlers left behind by retired tooling (cc-retain,
+cc-reconcile-nudge) are removed from every hook event they appear under. Idempotent:
+re-running with the same inputs leaves the file untouched.
 """
 
 from __future__ import annotations
@@ -33,6 +36,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--script", required=True, type=Path)
     parser.add_argument("--primer-script", required=True, type=Path)
     parser.add_argument("--instructions-script", required=True, type=Path)
+    parser.add_argument("--gate-script", required=True, type=Path)
     parser.add_argument("--env-file", required=True, type=Path)
     parser.add_argument("--state-dir", required=True, type=Path)
     return parser.parse_args()
@@ -142,6 +146,8 @@ def merge_settings(
     primer_script: Path | None = None,
     instructions_cmd: str | None = None,
     instructions_script: Path | None = None,
+    gate_cmd: str | None = None,
+    gate_script: Path | None = None,
 ) -> dict[str, Any]:
     hooks = document.setdefault("hooks", {})
     if not isinstance(hooks, dict):
@@ -171,12 +177,29 @@ def merge_settings(
         _ensure_owned_entry(hooks, "SessionStart", primer_cmd, primer_script, timeout=15)
         _ensure_owned_entry(hooks, "SessionEnd", primer_cmd, primer_script, timeout=5)
 
-    # Claude Code auto-loads CLAUDE.md but not AGENTS.md, so a repository whose rules live
-    # in AGENTS.md would start every session with them absent. This hook injects them.
+    # Claude Code auto-loads CLAUDE.md but not AGENTS.md, so this hook announces the
+    # repository's AGENTS.md at session start: path, headings, and notice of the gate.
     if instructions_cmd is not None and instructions_script is not None:
         _ensure_owned_entry(
             hooks, "SessionStart", instructions_cmd, instructions_script, timeout=5
         )
+
+    # Writes are gated on having read the repository's AGENTS.md. This fires for subagent
+    # tool calls as well as the main session.
+    if gate_cmd is not None and gate_script is not None:
+        groups = hooks.setdefault("PreToolUse", [])
+        if not isinstance(groups, list):
+            raise ValueError("settings.json field 'hooks.PreToolUse' must be an array")
+        retained = _without_handlers(
+            groups, lambda handler: _handler_uses_script(handler, gate_script)
+        )
+        retained.append(
+            {
+                "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+                "hooks": [{"type": "command", "command": gate_cmd, "timeout": 10}],
+            }
+        )
+        hooks["PreToolUse"] = retained
 
     env = document.setdefault("env", {})
     if not isinstance(env, dict):
@@ -238,6 +261,15 @@ def main() -> int:
         shlex.quote(argument)
         for argument in (str(args.python.resolve()), str(args.instructions_script.absolute()))
     )
+    gate_cmd = " ".join(
+        shlex.quote(argument)
+        for argument in (
+            str(args.python.resolve()),
+            str(args.gate_script.absolute()),
+            "--env-file",
+            str(args.env_file.absolute()),
+        )
+    )
     try:
         document = load_settings(args.settings)
         merge_settings(
@@ -248,6 +280,8 @@ def main() -> int:
             args.primer_script.absolute(),
             instructions_cmd,
             args.instructions_script.absolute(),
+            gate_cmd,
+            args.gate_script.absolute(),
         )
         write_settings(args.settings, document)
     except ValueError as error:

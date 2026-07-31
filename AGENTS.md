@@ -72,9 +72,26 @@ model.
   `tags`/`tag_groups` were measured non-restrictive here — a nonsense tag returns what a real one
   does. Every recall *result* carries its metadata, so the primer filters the project section
   itself: facts attributed to another project are dropped, unattributed ones kept, and legacy
-  path-shaped names must still match via `same_project()`. Rules recall stays deliberately
-  unscoped — a preference stated in one repository applies everywhere, and losing a real standing
-  rule is worse than a little cross-project bleed. Re-test the server filter before relying on it.
+  path-shaped names must still match via `same_project()`. Re-test the server filter before
+  relying on it.
+- **The project section cannot come from `reflect`.** Synthesis reconciles the whole bank and
+  returns prose, so there is no per-fact metadata to filter and the client-side scoping above has
+  nothing to act on; `tags` are non-restrictive on `reflect` as well. Constraining the query to one
+  project is not sufficient — answers mix in facts from unrelated repositories. Recall stays the
+  source for this section until a restrictive scoping mechanism exists.
+- **Gated rules are the bank's directives, verbatim — never a recall.** A recall over rule-shaped
+  language cannot separate a standing rule from a fact *about* one, so it returns notes about the
+  rules, and about this primer's own construction, ranked among them. Filtering the results is not
+  the fix: a regex cannot weigh meaning and discards real rules along with the noise. Directives
+  are the curated set, so `render_rules` renders them alone — collapsed to one line but never
+  truncated, since the name is the whole rule — and a preference reaches the gate by being promoted
+  into one. The cost is deliberate: an unpromoted preference is absent from the gated document
+  rather than present alongside noise.
+- **An empty fetch and a failed fetch are different facts.** The rules document is deleted when the
+  bank genuinely holds no directives, so a fetch that failed must be distinguishable from one that
+  returned nothing — `collect_sections` reports `None` against `[]`, and a malformed response raises
+  rather than degrading to empty. Conflating them deletes the gate's only copy of the rules on a
+  transient network error, and the gate reads an absent document as "no rules apply."
 - **Local auto memory is forced off** (`autoMemoryEnabled: false`, enforced on every merge, not
   defaulted). Local fact files fork memory into an unreconciled second store that goes stale
   silently. Never reintroduce a local memory surface.
@@ -106,12 +123,40 @@ model.
 - **The settings.json merge is surgical.** Repo-owned entries are matched by script path; foreign
   hooks are preserved byte-for-byte; `MAX_MCP_OUTPUT_TOKENS` is added only when absent (large
   recalls need headroom); an unchanged merge rewrites nothing.
-- **`AGENTS.md` adherence is enforced mechanically.** Claude Code auto-loads `CLAUDE.md` but not
-  `AGENTS.md`, so agents were told to follow a file they never received — the failure was absence,
-  not disobedience. `scripts/inject_repo_instructions.py` (SessionStart) prints the repo's
-  `AGENTS.md` into context, skipping when a root `CLAUDE.md` already imports it. Subagents get no
-  hooks, so the same requirement lives in their contracts and in every brief, and Codex reviewers
-  must emit a compliance section. Never weaken any leg: prose alone demonstrably failed.
+- **Adherence is gated, not requested.** Claude Code does not auto-load `AGENTS.md`, and rules that
+  merely sit in context get skimmed while rules an agent reads get followed. So
+  `scripts/inject_repo_instructions.py` (SessionStart) prints a pointer — path, section headings,
+  notice that writes are gated, and the standing-rules document's path when one exists — and
+  `scripts/gate_repo_instructions.py` (PreToolUse on the writing tools) denies a write until the
+  acting agent has read them. It fires inside subagents too. Every gated document is announced by
+  path, never inlined: a pointer keeps the read an act the agent performs, and an agent that learns
+  of a gated document only from a denial spends its first write discovering it.
+- **Two documents are gated, on different terms.** The repository's `AGENTS.md` must have been read
+  complete and current. The standing-rules document (`rules_path()` under the primer cache) is gated
+  on *presence* of a read alone, because it is regenerated in the background and an exact-content
+  rule would re-gate an agent every time a refresh landed — through no fault of its own. Both expire
+  on context growth. When the gate is about to ask for the rules document it first spawns a refresh,
+  so the read it prompts returns current memory rather than session-start memory. A project with no
+  rules document — no memory store, or a first session — is simply not gated on it.
+- **The gate denies; it never allows.** Emitting `permissionDecision: "allow"` auto-approves a
+  write and bypasses the normal permission prompt, so passing the gate means printing nothing at
+  all. Only a denial produces output.
+- **Gate compliance is derived from the transcript, never from marker files.** The transcript is
+  the source of truth for what an agent read, it cannot drift, and it leaves nothing to clean up. A
+  read of `AGENTS.md` qualifies only when it used `Read` on the file with no `offset`/`limit` key
+  present, its result is correlated to that call by `tool_use_id`, and its content matches the file
+  exactly, so any edit to `AGENTS.md` re-gates every agent. Read
+  numbers every element of the newline split, so a file ending in a newline renders one final
+  numbered-but-empty line — the comparison keeps it. The staleness budget bounds the scan: anything
+  older is stale regardless, so cost does not grow with session length.
+- **The gated repository comes from the file being written**, not from `cwd`; `cwd` only resolves
+  relative paths. `transcript_path` inside a subagent names the *parent* session, so the child's
+  transcript is derived from `agent_id`, and when that file is absent the gate fails open rather
+  than consulting the parent — a parent's read must never satisfy a child.
+- **Fail open on every uncertainty**: unreadable transcript or instructions, non-UTF8 content, and
+  instruction files longer than a single `Read` can return (an unranged read would be paginated,
+  leaving nothing able to satisfy the gate). `CLAUDE_SKIP_AGENTS_GATE=1` disables it outright. A
+  gate that can deadlock a session is worse than the problem it solves.
 
 ## Verification
 
@@ -123,8 +168,8 @@ bash -n apply.sh bin/codex-review
 python3 -m py_compile scripts/*.py
 ```
 
-`.github/workflows/tests.yml` runs exactly these on every push and pull request, across Python
-3.10–3.14 (3.10 is the floor: the `Transport` alias evaluates a `X | None` union at runtime). Keep
+`.github/workflows/tests.yml` runs exactly these across Python 3.10–3.14 on pushes to `main`,
+pull requests, and manual dispatch (3.10 is the floor: the `Transport` alias evaluates a `X | None` union at runtime). Keep
 the workflow and this list in step; if a check is worth running locally it is worth running in CI.
 
 For transcript-parser changes, also dry-run against a real session transcript

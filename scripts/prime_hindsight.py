@@ -12,11 +12,19 @@ the background (stale-while-revalidate):
 - `--refresh` worker: rebuild the primer at high recall budget under a per-project lock
   and write it atomically. Runs detached; latency is invisible.
 
-The primer has two sections: standing rules & preferences (the bank's active directives
-fetched verbatim plus a dedicated rules recall, so pinned behavior never competes with
-topical facts for ranking slots) and project context (a project-scoped recall). Facts
-matching known bookkeeping-noise shapes are dropped, and the header carries the
-generation time so a session knows the age of what it is holding.
+The primer has two sections: standing rules & preferences (the bank's active directives,
+verbatim) and project context (a project-scoped recall). The header carries the generation
+time so a session knows the age of what it is holding.
+
+Rules come from directives alone. A recall over rule-shaped language cannot separate a
+standing rule from a fact about one, so it returns notes about the rules — and about this
+primer's own construction — ranked alongside the rules themselves. Directives are the
+curated set; promoting a preference into one is how it reaches the gate.
+
+The rules section is also written to disk on its own, at `rules_path()`, because the write
+gate requires an agent to have *read* it — rules that merely sit in a session's context get
+skimmed. A confirmed-empty bank retires that document; a failed fetch leaves it alone, since
+the gate reads an absent document as "no standing rules apply".
 
 Fail-open everywhere: on any failure the hook prints nothing (or the stale cache) and
 exits 0; a session must never be blocked or polluted by a memory-store failure.
@@ -38,6 +46,7 @@ import tempfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from inject_repo_instructions import find_repo_root  # noqa: E402
 from retain_hindsight import (  # noqa: E402
     RetentionError,
     _endpoint,
@@ -51,28 +60,14 @@ DEFAULT_CACHE_DIR = "~/.claude/hindsight-primer"
 DEFAULT_HTTP_TIMEOUT = 8.0
 REFRESH_HTTP_TIMEOUT = 30.0
 CACHE_VERSION = 1
-RULES_MAX_TOKENS = 600
 CONTEXT_MAX_TOKENS = 1200
 MAX_DIRECTIVES = 10
-MAX_RULES = 6
 MAX_CONTEXT_FACTS = 10
 MAX_FACT_CHARS = 400
 
-# Known junk-fact shapes: retention/migration bookkeeping and harness surface noise that
-# adds nothing a session can act on.
-NOISE_RE = re.compile(
-    r"opened the file .+ in the IDE"
-    r"|\bNote recorded\b"
-    r"|\bnote was created\b"
-    r"|\b(?:curated |project.)?memory note\b"
-    r"|\bMemory note metadata\b"
-    r"|migrated into Hindsight"
-    r"|memory node '.*' was (?:created|modified)"
-    r"|\bReflect Mission\b"
-    r"|\bproject -(?:var-)?home-"
-    r"|^The project is (?:named )?[\w./-]+\.?$",
-    re.I,
-)
+# What belongs in the primer is Hindsight's judgment, expressed through the query it is
+# asked. Pattern-matching over returned facts cannot weigh meaning, and silently discards
+# real rules along with the noise.
 
 
 def parse_args() -> argparse.Namespace:
@@ -83,6 +78,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--refresh", action="store_true")
     parser.add_argument("--cwd", type=Path, default=None)
     return parser.parse_args()
+
+
+def project_identity(cwd: str) -> str:
+    """The project a working directory belongs to.
+
+    Resolved from the repository root rather than the directory itself, so a session
+    started in a subdirectory names the same project as one started at the top — and so
+    the gate, which resolves the repository from the file being written, agrees.
+    """
+    root = find_repo_root(Path(cwd))
+    return stable_project(str(root) if root is not None else cwd)
 
 
 def normalize_project(name: str) -> str:
@@ -100,11 +106,32 @@ def same_project(fact_project: str, current: str) -> bool:
     return fact == wanted or fact.endswith(f"-{wanted}")
 
 
+def _collapse(text: str) -> str:
+    """One line, so a multi-line value cannot break the list it is rendered into."""
+    return re.sub(r"\s+", " ", text).strip()
+
+
 def _clean(text: str) -> str:
-    text = re.sub(r"\s+", " ", text).strip()
+    text = _collapse(text)
     if len(text) > MAX_FACT_CHARS:
         text = text[: MAX_FACT_CHARS - 1] + "…"
     return text
+
+
+def _listing(result: dict, key: str) -> list:
+    """The list under `key`, or `RetentionError` when the response is not shaped that way.
+
+    A malformed payload is a failed fetch, not an empty one. An empty result is a fact about
+    the bank that callers act on — the rules document is deleted on it — so the two must
+    never be conflated. An absent key is malformed rather than empty: a well-formed response
+    carries the collection even when it holds nothing.
+    """
+    if key not in result:
+        raise RetentionError(f"malformed response: {key} is absent")
+    value = result[key]
+    if not isinstance(value, list):
+        raise RetentionError(f"malformed response: {key} is not a list")
+    return value
 
 
 def _recall_facts(
@@ -137,13 +164,11 @@ def _recall_facts(
         timeout,
     )
     facts: list[str] = []
-    for entry in result.get("results", []):
+    for entry in _listing(result, "results"):
         if not isinstance(entry, dict):
             continue
         text = entry.get("text")
         if not isinstance(text, str) or not text.strip():
-            continue
-        if NOISE_RE.search(text):
             continue
         if scope_project:
             metadata = entry.get("metadata")
@@ -169,20 +194,33 @@ def _directives(config, timeout: float, transport) -> list[str]:
         timeout,
     )
     names: list[str] = []
-    for item in result.get("items", []):
-        if isinstance(item, dict) and isinstance(item.get("name"), str) and item["name"]:
-            names.append(_clean(item["name"]))
+    for item in _listing(result, "items"):
+        # Strict, because skipping an unreadable entry would shrink the set and a set that
+        # shrinks to nothing is indistinguishable from a bank holding no directives — which
+        # deletes the gated document. A shape change must fail, not silently empty it.
+        if not isinstance(item, dict):
+            raise RetentionError("malformed response: directive entry is not an object")
+        name = item.get("name")
+        if not isinstance(name, str) or not name.strip():
+            raise RetentionError("malformed response: directive has no usable name")
+        # Collapsed but never truncated: a directive name is the whole rule, and the gated
+        # document is the only place an agent reads it.
+        names.append(_collapse(name))
         if len(names) >= MAX_DIRECTIVES:
             break
     return names
 
 
-def build_primer(
-    config, project: str, timeout: float, budget: str = "low", transport=default_transport
-) -> str:
+def collect_sections(
+    config, project: str, timeout: float, budget: str, transport
+) -> tuple[list[str] | None, list[str]]:
+    """Directives and project context. Each fails open alone.
+
+    `directives` is `None` when the fetch failed and `[]` when it succeeded against a bank
+    that holds none. Only the second is grounds for deleting the rules document.
+    """
     seen: set[str] = set()
-    directives: list[str] = []
-    rules: list[str] = []
+    directives: list[str] | None = None
     context: list[str] = []
 
     try:
@@ -190,23 +228,8 @@ def build_primer(
     except RetentionError:
         pass
     try:
-        rules = _recall_facts(
-            config,
-            "standing rules and user preferences the assistant must always follow: git "
-            "workflow (commits, branches, staging), coding conventions, communication "
-            f"style, verification habits — globally and for {project}",
-            RULES_MAX_TOKENS,
-            budget,
-            timeout,
-            transport,
-            seen,
-        )[:MAX_RULES]
-    except RetentionError:
-        pass
-    try:
-        # Rules are global — a preference stated in one repository applies everywhere — so
-        # the rules recall above is deliberately unscoped. Project context is scoped, so a
-        # session never opens with another project's state presented as its own.
+        # Every recall result carries its provenance, so facts attributed to another
+        # project are dropped and a session never opens with another project's state.
         context = _recall_facts(
             config,
             f"{project}: current project state, recent decisions and their rationale, "
@@ -221,7 +244,18 @@ def build_primer(
     except RetentionError:
         pass
 
-    if not (directives or rules or context):
+    return directives, context
+
+
+def build_primer(
+    config, project: str, timeout: float, budget: str = "low", transport=default_transport
+) -> str:
+    directives, context = collect_sections(config, project, timeout, budget, transport)
+    return render_primer(project, directives or [], context)
+
+
+def render_primer(project: str, directives: list[str], context: list[str]) -> str:
+    if not (directives or context):
         return ""
 
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
@@ -230,11 +264,10 @@ def build_primer(
         "Historical context, not proof of current state — verify against current artifacts.",
         "For deeper or targeted retrieval, call mcp__hindsight__recall.",
     ]
-    if directives or rules:
+    if directives:
         lines.append("")
         lines.append("## Standing rules and preferences")
         lines.extend(f"- {name}" for name in directives)
-        lines.extend(f"- {fact}" for fact in rules)
     if context:
         lines.append("")
         lines.append(f"## {project} context")
@@ -244,6 +277,64 @@ def build_primer(
 
 def _cache_path(cache_dir: Path, project: str) -> Path:
     return cache_dir / f"{hashlib.sha256(project.encode()).hexdigest()}.json"
+
+
+def rules_path(cache_dir: Path, project: str) -> Path:
+    """The standing-rules document for a project.
+
+    Materialized as a file so an agent can read it: rules that merely sit in context get
+    skimmed, and writes are gated on having read this one.
+    """
+    return cache_dir / f"{hashlib.sha256(project.encode()).hexdigest()}.rules.md"
+
+
+def render_rules(project: str, directives: list[str]) -> str:
+    if not directives:
+        return ""
+    generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    lines = [
+        f"# Standing rules and preferences ({project}, recalled {generated})",
+        "",
+        "These are binding for every project. File writes are gated on having read them.",
+        "",
+    ]
+    lines.extend(f"- {name}" for name in directives)
+    return "\n".join(lines) + "\n"
+
+
+def sync_rules_document(cache_dir: Path, project: str, directives: list[str] | None) -> None:
+    """Bring the gated rules document in line with the bank.
+
+    `None` means the directive fetch failed, so the existing document is left untouched —
+    the gate reads an absent document as "no standing rules apply", making deletion on a
+    transient error worse than serving a stale copy. An empty list is a confirmed empty
+    bank, so a document left over from withdrawn directives is removed.
+    """
+    if directives is None:
+        return
+    document = render_rules(project, directives)
+    if document:
+        write_rules(cache_dir, project, document)
+        return
+    try:
+        rules_path(cache_dir, project).unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
+def write_rules(cache_dir: Path, project: str, document: str) -> None:
+    cache_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+    os.chmod(cache_dir, 0o700)
+    path = rules_path(cache_dir, project)
+    file_descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=cache_dir)
+    try:
+        os.fchmod(file_descriptor, 0o600)
+        with os.fdopen(file_descriptor, "w", encoding="utf-8") as handle:
+            handle.write(document)
+        os.replace(temporary_name, path)
+    finally:
+        if os.path.exists(temporary_name):
+            os.unlink(temporary_name)
 
 
 def read_cache(cache_dir: Path, project: str) -> str | None:
@@ -306,7 +397,7 @@ def kick_refresh(args: argparse.Namespace, cwd: str) -> None:
 def run_refresh(args: argparse.Namespace) -> int:
     if args.cwd is None:
         return 0
-    project = stable_project(str(args.cwd))
+    project = project_identity(str(args.cwd))
     if not project:
         return 0
     try:
@@ -322,9 +413,13 @@ def run_refresh(args: argparse.Namespace) -> int:
             return 0
         try:
             config = load_retention_config(args.env_file)
-            primer = build_primer(config, project, REFRESH_HTTP_TIMEOUT, budget="high")
+            directives, context = collect_sections(
+                config, project, REFRESH_HTTP_TIMEOUT, "high", default_transport
+            )
+            primer = render_primer(project, directives or [], context)
             if primer:
                 write_cache(args.cache_dir, project, primer)
+            sync_rules_document(args.cache_dir, project, directives)
         except Exception:
             pass
     return 0
@@ -349,7 +444,7 @@ def main() -> int:
         kick_refresh(args, cwd)
         return 0
 
-    project = stable_project(cwd)
+    project = project_identity(cwd)
     try:
         cached = read_cache(args.cache_dir, project)
     except Exception:
@@ -362,15 +457,24 @@ def main() -> int:
     # Cache miss: build once synchronously at low budget, then upgrade in the background.
     try:
         config = load_retention_config(args.env_file)
-        primer = build_primer(config, project, args.http_timeout, budget="low")
+        directives, context = collect_sections(
+            config, project, args.http_timeout, "low", default_transport
+        )
+        primer = render_primer(project, directives or [], context)
     except (RetentionError, Exception):
-        primer = ""
+        directives, primer = None, ""
     if primer:
         print(primer)
         try:
             write_cache(args.cache_dir, project, primer)
         except Exception:
             pass
+    # Independent of the primer: an empty bank still retires an obsolete rules document,
+    # and an empty primer is not evidence that the directive fetch failed.
+    try:
+        sync_rules_document(args.cache_dir, project, directives)
+    except Exception:
+        pass
     kick_refresh(args, cwd)
     return 0
 
