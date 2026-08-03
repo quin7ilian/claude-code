@@ -101,6 +101,10 @@ into models and efforts, so a model-lineup change is a one-file edit and existin
   against the plan's intent.
 - **Review placed by tier** — deterministic checks always; per-item Codex review for `complex`; one
   batch review of the integrated change-set covering everything, including cross-item interactions.
+- **Fix loops are disciplined** — a fix inherits the tier of the code it touches and lands with a
+  pinning test; iterating reviews run as a living-brief loop with a circuit breaker
+  ([review-loop.md](dot-claude/skills/implement/references/review-loop.md)); and fix authorship
+  escalates to a Codex consult (pair mode) on countable evidence, never as a default.
 - **Resume, don't redo** — interrupted runs restart from the spec and working tree.
 
 Codex review runs through [bin/codex-review](bin/codex-review) in a read-only sandbox and ends in a
@@ -160,7 +164,7 @@ could not turn into proof. `CLAUDE_SKIP_AGENTS_GATE=1` disables it outright.
 `/codex-code-review`, `/codex-plan-review`, `/codex-research`, `/codex-brainstorm` each run one
 sandboxed pass from a self-contained brief with a strict output contract, then every finding is
 independently verified. At most one pass per task, never chained, user veto absolute — the
-per-deliverable gate inside `/implement` is the deliberate exception.
+per-deliverable gate and pair-mode fix consults inside `/implement` are the deliberate exceptions.
 
 ## Install
 

@@ -114,6 +114,14 @@ model.
 - **The review gate fails loud, never silently passes.** `bin/codex-review` exits non-zero on a
   missing, failed, or empty review, and both the coder contract and the skills state that an
   unavailable reviewer is a blocker, not a pass.
+- **Fixes inherit the tier of the code they touch; pair mode is an escalation state, never a
+  default.** A review-round fix lands in exactly the code that earned the strictest scaffolding, so
+  it routes like that code — fresh window, pinning test, ledger-carrying brief — never as a
+  `standard` afterthought. Codex-authored fixes (pair mode, `review-loop.md`) trigger on countable
+  evidence — a failed re-review on a ledger invariant, two failures elsewhere, the loop's circuit
+  breaker — and exit per finding; making pair mode the `complex` default would double wall-clock on
+  the majority of items that clear review in a round or two. Author and reviewer are always
+  different models, whichever way around.
 
 ### Installation and repository instructions
 

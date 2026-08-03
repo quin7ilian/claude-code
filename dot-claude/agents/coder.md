@@ -32,6 +32,10 @@ summary rather than inventing requirements.
    summary; do not fix them.
 7. Run the tests and checks relevant to your change and make them pass — including any
    the repository's instruction files mandate.
+8. If your item is a fix, write the pinning test first and verify both directions: it
+   fails on the unfixed code and passes after your change. Hold the fix to every
+   invariant your brief's ledger names, across the whole tree it governs — not just at
+   the finding's site.
 
 ## Codex review gate — when your brief requires it
 
@@ -59,8 +63,12 @@ When the per-item review applies:
 4. Read the review once. For every finding: reproduce or inspect the cited evidence
    yourself, then accept, reject, or narrow it explicitly — the reviewer is advice, not
    authority. Fix accepted findings, rerun the relevant tests, and rerun the review.
-5. Loop until the verdict is PASS, or after 3 review rounds return with the unresolved
-   findings explicitly flagged. Never silently drop or soften a finding.
+5. Loop per `~/.claude/skills/implement/references/review-loop.md`: living brief, unique
+   output per round, pinning test per fix. When your fix to a finding fails re-review —
+   once for a finding on an invariant your brief's ledger names, twice anywhere else —
+   stop re-authoring and run a pair-mode consult
+   (same reference) for the patch instead. After 3 review rounds, return with the
+   unresolved findings explicitly flagged. Never silently drop or soften a finding.
 6. If `codex-review` exits non-zero (reviewer unavailable, empty output), report that as a
    blocker in your summary. An unavailable reviewer is never a pass.
 

@@ -66,23 +66,33 @@ authoritative-sounding note misleads more than no note.
 
 For `complex` items, additionally write the implementation plan into the brief — the
 approach, load-bearing invariants, the tricky spots, and explicit stop conditions ("if
-assumption X does not hold, stop and return for guidance"). When a complex item returns:
+assumption X does not hold, stop and return for guidance"). The plan's invariants are the
+item's **invariant ledger**: keep it current in the spec (or a working note), carry it
+verbatim in every later fix brief, and hold every fix to it tree-wide — a local fix that
+satisfies its finding while violating a ledger invariant is not done. Items the spec
+flags `pair-authored` (`references/complexity-tiers.md`) start with a Codex consult
+against your plan (`references/review-loop.md`); dispatch the returned patch to a
+`coder-complex` window to apply, test, and integrate, and run the adversarial per-item
+review yourself in place of the codex review. When a complex item returns:
 run the conceptual review before accepting it — check the coder's summary and targeted
 reads of the load-bearing code against the plan's invariants and intent, and verify any
 reported deviation was the right call. Send a focused fix brief if it drifted.
 
 Do an item inline yourself only when it is inseparable from live conversation or design
 context — and then run the identical review gate yourself (`codex-review` with a brief,
-verify findings, loop to PASS) before marking the item done.
+verify findings, loop to PASS) before marking the item done. Fixes get no such
+exception: a review-round fix is dispatched to a fresh coder window, never authored
+inline from this session's accumulated context.
 
 ## Review placement
 
 Review is placed per the policy in `references/complexity-tiers.md`: deterministic checks
 always, per-item codex review for `complex` items inside the coder, and one **batch codex
 review** of the integrated change-set here (below) covering everything — including the
-cross-item interactions no per-item review can see. Within this workflow these reviews are
-authorized. Do not additionally chain `codex-plan-review`, `codex-research`, or
-`codex-brainstorm` from inside the workflow.
+cross-item interactions no per-item review can see. Within this workflow these reviews
+and the pair-mode consults of `references/complexity-tiers.md` are authorized. Do not
+additionally chain `codex-plan-review`, `codex-research`, or `codex-brainstorm` from
+inside the workflow.
 
 A coder reporting an unavailable reviewer has reported a blocker, not a pass — the same
 applies to the batch review. Surface it to the user instead of proceeding as if reviewed.
@@ -102,9 +112,13 @@ After all items have landed and the full test suite passes:
    more than several hundred changed lines), split the review into coherent clusters of
    related items instead of one pass.
 3. Verify every finding yourself, then dispatch accepted findings back to coders as
-   focused fix briefs (fixes are `standard`-tier unless riskier). Re-review only the fix
-   delta, not the whole set again.
+   focused fix briefs. A fix inherits the tier of the code it touches, ships with a
+   pinning test, and its authorship escalates per the ladder in
+   `references/complexity-tiers.md`. Re-review the fix delta plus the invariant ledger
+   tree-wide — a delta-only re-review cannot see a fix that breaks a global invariant.
 4. Loop until PASS or return with unresolved findings explicitly flagged to the user.
+   The moment a loop starts, run it per `references/review-loop.md` — living brief,
+   owner adjudications, unique output per round, circuit breaker.
 
 ## Interruptions: resume, don't redo
 

@@ -100,10 +100,11 @@ authoritative sources before relying on them, and state what could not be verifi
 - Complete the native analysis or implementation first. Do not consult Codex during initial
   reasoning, routine planning, ordinary research, implementation, or exploratory debugging.
 - Normally use at most one Codex skill and one Codex pass per task. Never chain from one Codex skill
-  into another. Run a follow-up pass only when the user explicitly requests it. Exception: the
-  reviews inside the `implement` workflow — per-item review of complex-tier work and the batch
-  review of the integrated change-set — are part of that workflow's contract and do not count
-  against this rule; no other Codex use may be chained from within it.
+  into another. Run a follow-up pass only when the user explicitly requests it. Exception: the Codex
+  passes the `implement` workflow's contract places — per-item review of complex-tier work, the
+  batch review of the integrated change-set, and pair-mode fix consults under the escalation ladder
+  in `~/.claude/skills/implement/references/complexity-tiers.md` — do not count against this rule;
+  no other Codex use may be chained from within it.
 - Eligibility is not a mandate: even when a review is allowed below, skip it unless a specific
   unresolved risk makes a different-model review likely to change the result.
 - Use `codex-code-review` only when the user explicitly requests Codex review, or as a final review
@@ -172,6 +173,11 @@ final report. Work items carry logical complexity tiers
 — design specs assign tiers per item and never name models; that file's routing table is the single
 place tiers translate into the coder subagent's model. Coder and researcher subagents return compact
 summaries, never raw logs or dumps.
+
+Any Codex review that returns NEEDS_CHANGES and enters a fix round — inside the workflow or not —
+follows `~/.claude/skills/implement/references/review-loop.md`: fixes inherit the tier of the code
+they touch, land with pinning tests, and escalate authorship per that ladder rather than being
+re-authored inline round after round.
 
 ## Memory maintenance
 
