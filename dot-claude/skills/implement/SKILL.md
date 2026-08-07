@@ -35,6 +35,11 @@ agent, warm prompt-cache prefixes get reused, and each brief can carry forward w
 earlier items learned. Dispatch in parallel only when the user explicitly asks for speed
 on this run.
 
+Every dispatch passes `run_in_background: true`; a synchronous dispatch blocks the
+session — and the user's steering — for the whole run. Spawn the coder, end your turn,
+and resume on its completion notification. Answer messages that arrive mid-run and fold
+their steering into the running item or the next brief.
+
 Each dispatch prompt is a self-contained work-item brief — the subagent cannot see this
 conversation. Include: the goal, acceptance criteria, constraints, the exact files
 involved, decisions already made, anything from the spec the item depends on, and the
@@ -107,10 +112,11 @@ After all items have landed and the full test suite passes:
    requirement to verify the change against them, and the interactions between items that
    deserve scrutiny. Note which items already passed a per-item review so the reviewer
    spends its depth on the rest and on integration.
-2. Run `codex-review --brief <batch-brief.md> --repo <root> --out <review.md>`. Review
-   quality degrades on oversized diffs: if the integrated change-set is large (roughly
-   more than several hundred changed lines), split the review into coherent clusters of
-   related items instead of one pass.
+2. Run `codex-review --brief <batch-brief.md> --repo <root> --out <review.md>` in the
+   background, ending your turn until it completes. Review quality degrades on oversized
+   diffs: if the integrated change-set is large (roughly more than several hundred
+   changed lines), split the review into coherent clusters of related items instead of
+   one pass.
 3. Verify every finding yourself, then dispatch accepted findings back to coders as
    focused fix briefs. A fix inherits the tier of the code it touches, ships with a
    pinning test, and its authorship escalates per the ladder in
