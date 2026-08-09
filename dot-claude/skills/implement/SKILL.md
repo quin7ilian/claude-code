@@ -38,13 +38,20 @@ on this run.
 Every dispatch passes `run_in_background: true`; a synchronous dispatch blocks the
 session — and the user's steering — for the whole run. Spawn the coder, end your turn,
 and resume on its completion notification. Answer messages that arrive mid-run and fold
-their steering into the running item or the next brief.
+their steering into the running item or the next brief. Folding bypasses nothing:
+steering that changes the nature of the work re-tiers its item as if dispatched fresh,
+and an item that lands in `complex` gets its plan, stop conditions, and tier routing — a
+new `coder-complex` window, not the window the steering happened to arrive in — before
+any coder proceeds.
 
 Each dispatch prompt is a self-contained work-item brief — the subagent cannot see this
 conversation. Include: the goal, acceptance criteria, constraints, the exact files
 involved, decisions already made, anything from the spec the item depends on, and the
 item's tier with its review requirement (`complex` → per-item review; `trivial`/
-`standard` → review deferred to the batch).
+`standard` → review deferred to the batch). Design is not delegable: any contract,
+interface, or surface shape the item introduces is settled before it reaches a coder —
+by the spec, the user, or you — whether it travels in a brief or a mid-run relay. A
+dispatch that leaves one open is malformed.
 
 **Every brief opens with this block, filled in — copy it, do not paraphrase it:**
 
