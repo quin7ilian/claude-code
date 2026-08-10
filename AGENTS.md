@@ -114,6 +114,12 @@ model.
 - **The review gate fails loud, never silently passes.** `bin/codex-review` exits non-zero on a
   missing, failed, or empty review, and both the coder contract and the skills state that an
   unavailable reviewer is a blocker, not a pass.
+- **Findings stand on named contracts; a spec omission is a decision not made.** The reviewer
+  contract in `bin/codex-review` requires every finding to name the contract it violates and bans
+  dead-surface fix shapes; adjudication (orchestrator and coder alike) verifies a finding's premise
+  before its mechanics. Never relax the finding requirement to "requirement or concrete impact" —
+  a finding allowed to stand on impact alone is how a reviewer manufactures a contract out of the
+  current use-case and gets it landed as a restriction nobody designed.
 - **Fixes inherit the tier of the code they touch; pair mode is an escalation state, never a
   default.** A review-round fix lands in exactly the code that earned the strictest scaffolding, so
   it routes like that code — fresh window, pinning test, ledger-carrying brief — never as a

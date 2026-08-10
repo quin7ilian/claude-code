@@ -51,7 +51,11 @@ item's tier with its review requirement (`complex` → per-item review; `trivial
 `standard` → review deferred to the batch). Design is not delegable: any contract,
 interface, or surface shape the item introduces is settled before it reaches a coder —
 by the spec, the user, or you — whether it travels in a brief or a mid-run relay. A
-dispatch that leaves one open is malformed.
+dispatch that leaves one open is malformed. The mirror rule binds downstream: what the
+spec and brief leave unstated is a decision not made, which coders and reviewers may
+never fill from the current use-case — an item returned blocked on an omission is the
+workflow working, so settle the decision here or with the user, record it, and
+re-dispatch.
 
 **Every brief opens with this block, filled in — copy it, do not paraphrase it:**
 
@@ -124,10 +128,16 @@ After all items have landed and the full test suite passes:
    diffs: if the integrated change-set is large (roughly more than several hundred
    changed lines), split the review into coherent clusters of related items instead of
    one pass.
-3. Verify every finding yourself, then dispatch accepted findings back to coders as
-   focused fix briefs. A fix inherits the tier of the code it touches, ships with a
-   pinning test, and its authorship escalates per the ladder in
-   `references/complexity-tiers.md`. Re-review the fix delta plus the invariant ledger
+3. Verify every finding yourself — premise before mechanics. First confirm the contract
+   the finding cites exists (the spec, the repository's instruction files, or the
+   language and its libraries) and says what the finding claims: accurate mechanics on
+   an invented premise is a rejected finding, not a smaller fix, and a finding grounded
+   only in the current use-case is contract invention. Then verify the mechanics, and
+   shape the fix yourself where the reviewer's shape is wrong — no fix may create dead
+   surface (a flag that only rejects, a parameter with no legal value, a branch nothing
+   can reach). Dispatch accepted findings back to coders as focused fix briefs. A fix
+   inherits the tier of the code it touches, ships with a pinning test, and its
+   authorship escalates per the ladder in `references/complexity-tiers.md`. Re-review the fix delta plus the invariant ledger
    tree-wide — a delta-only re-review cannot see a fix that breaks a global invariant.
 4. Loop until PASS or return with unresolved findings explicitly flagged to the user.
    The moment a loop starts, run it per `references/review-loop.md` — living brief,

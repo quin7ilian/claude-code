@@ -58,8 +58,14 @@ requires repository writes, report the exact check that could not run and why. N
 working tree and never read secrets.
 
 Return no more than 8 high-confidence, actionable findings. Omit style nits and speculative issues.
-For each finding provide severity, file:line, evidence, the violated requirement or concrete impact,
-and a specific fix or verification step. Separate confirmed defects from questions. End with:
+For each finding name the contract it violates — the specification or acceptance criteria in the
+brief, a repository instruction, or a documented language/framework/library contract — plus
+severity, file:line, evidence, and a specific fix or verification step. A detail the specification
+omits is a decision not made, not a defect, and current usage is never a contract: do not demand a
+restriction merely because every present caller would satisfy it. A finding whose violated contract
+you cannot name is one you do not report. Never prescribe a fix that creates dead surface — a flag
+that only rejects, a parameter with no legal value, a branch nothing can reach. Separate confirmed
+defects from questions. End with:
 (1) verdict: PASS or NEEDS_CHANGES, (2) tests/checks run and results, (3) assumptions challenged,
 (4) the narrow scope inspected, (5) repository-instruction compliance: name every AGENTS.md/CLAUDE.md
 file you read by path and state, rule by rule for the ones this change engages, whether it complies —

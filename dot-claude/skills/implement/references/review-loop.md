@@ -36,7 +36,10 @@ round's findings are how the next round's findings get manufactured.
      old description.
    - **Accepted** — the owner takes the cost knowingly; do not re-report.
    - **Rejected — do not re-propose** — unless required for correctness of what is here,
-     with a concrete failure sequence; that goes back to the owner.
+     with a concrete failure sequence; that goes back to the owner. A finding whose
+     premise was invented — no citable spec, repository-instruction, or
+     language/framework contract, only the current use-case — is filed here with that
+     basis stated.
    - **Escalated** — pre-existing defect outside this change-set; report only an aspect
      the description misses or a way the change worsens it.
 4. The instruction that silence is an answer: "no findings" must be stated explicitly.
