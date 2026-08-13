@@ -98,36 +98,14 @@ model.
 
 ### Implementation workflow
 
-- **The orchestrator's model plans and reviews; it never types grunt code.** `complex` items are
-  executed by the coder model against an orchestrator-authored plan carrying invariants and binding
-  stop conditions, then conceptually reviewed by the orchestrator against the plan's intent — codex
-  review checks correctness against the brief and cannot judge design intent it never saw.
-- **Sustained completion beats wall-clock.** Coders dispatch serially by default: parallel bursts
-  concentrate burn into one usage window, and a limit hit then strands several agents whose re-runs
-  waste real tokens (measured: one 26-dispatch run hit three windows and rebuilt ~2.5M cache tokens
-  resuming stranded agents). Parallel dispatch is an explicit per-run user request.
-- **Tier policy has one home**, but two facts about it are load-bearing here: effort must be pinned
-  per subagent definition because the Task tool has no per-invocation effort override (verified
-  against sub-agents.md), and `coder-complex` is a thin overlay that reads `coder.md` at runtime —
-  exactly one coder contract, never forked. Under-efforting execution is false economy: a shallow
-  item that fails batch review costs more than the thinking would have.
-- **The review gate fails loud, never silently passes.** `bin/codex-review` exits non-zero on a
-  missing, failed, or empty review, and both the coder contract and the skills state that an
-  unavailable reviewer is a blocker, not a pass.
-- **Findings stand on named contracts; a spec omission is a decision not made.** The reviewer
-  contract in `bin/codex-review` requires every finding to name the contract it violates and bans
-  dead-surface fix shapes; adjudication (orchestrator and coder alike) verifies a finding's premise
-  before its mechanics. Never relax the finding requirement to "requirement or concrete impact" —
-  a finding allowed to stand on impact alone is how a reviewer manufactures a contract out of the
-  current use-case and gets it landed as a restriction nobody designed.
-- **Fixes inherit the tier of the code they touch; pair mode is an escalation state, never a
-  default.** A review-round fix lands in exactly the code that earned the strictest scaffolding, so
-  it routes like that code — fresh window, pinning test, ledger-carrying brief — never as a
-  `standard` afterthought. Codex-authored fixes (pair mode, `review-loop.md`) trigger on countable
-  evidence — a failed re-review on a ledger invariant, two failures elsewhere, the loop's circuit
-  breaker — and exit per finding; making pair mode the `complex` default would double wall-clock on
-  the majority of items that clear review in a round or two. Author and reviewer are always
-  different models, whichever way around.
+The workflow's rules and their rationale live in the artifacts themselves — the skills, the coder
+and verifier contracts, `references/complexity-tiers.md`, `bin/codex-review` — and are not restated
+here; if a rule is unclear from reading its artifact, fix the artifact. The one fact that spans
+them: finding discipline (named contracts, concrete failure scenarios, no dead surface), premise
+discipline (evidence attached or a recorded blocker, never assumed-by-choice), and the
+orchestrator's holistic duties are a single system mirrored across `bin/codex-review`, the
+implement, design-spec, and codex-plan-review skills, the coder contract, and
+`dot-claude/CLAUDE.md`. Relaxing one seat reopens the others — sweep them together or not at all.
 
 ### Installation and repository instructions
 

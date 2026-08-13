@@ -60,7 +60,10 @@ working tree and never read secrets.
 Return no more than 8 high-confidence, actionable findings. Omit style nits and speculative issues.
 For each finding name the contract it violates — the specification or acceptance criteria in the
 brief, a repository instruction, or a documented language/framework/library contract — plus
-severity, file:line, evidence, and a specific fix or verification step. A detail the specification
+severity, file:line, evidence, a concrete failure scenario stating the conditions under which the
+defect fires, the conditions under which it does not, and the observable effect, and a specific fix
+or verification step. A finding too terse to show its reader when the problem happens is not
+actionable. A detail the specification
 omits is a decision not made, not a defect, and current usage is never a contract: do not demand a
 restriction merely because every present caller would satisfy it. A finding whose violated contract
 you cannot name is one you do not report. Never prescribe a fix that creates dead surface — a flag

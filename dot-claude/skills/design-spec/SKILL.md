@@ -11,7 +11,8 @@ as the canonical working context and keep implementation outside this workflow.
 ## Maintain write-through context
 
 Establish the draft specification before extended design reasoning. Seed it immediately with the
-problem, goals, known constraints, Research basis, current assumptions, and unresolved decision agenda.
+problem, goals, known constraints, Research basis, the initial premise register, and unresolved
+decision agenda.
 Never design the whole system in chat and write the specification only after the discussion ends.
 
 - Work through consequential design points iteratively. Raise one coherent decision or tightly coupled
@@ -21,7 +22,8 @@ Never design the whole system in chat and write the specification only after the
   Record the decision, rationale, relevant rejected alternatives, consequences, and resulting changes to
   downstream sections or open questions before moving to the next point.
 - Mark unapproved proposals as pending rather than blending them into the agreed design. Keep the note's
-  distinction between settled decisions, working assumptions, and unresolved questions explicit.
+  distinction between settled decisions, premises awaiting verification, and unresolved questions
+  explicit.
 - Re-read the relevant specification sections before raising the next decision, and after compaction,
   resumption, or a long diversion. The current note—not recalled transcript detail—is authoritative.
 - Reconcile superseded material in place so the specification always presents a coherent current design
@@ -40,26 +42,44 @@ Never design the whole system in chat and write the specification only after the
    draft and seed its working sections before continuing the design conversation.
 5. Use Hindsight for relevant project history and prior decisions, not as proof of current state.
 
-Perform small, targeted authoritative lookups needed to keep the design correct. If the work exposes a
-broad evidence gap, record a precise research question. If it blocks the design, stop and let the user
-decide whether to start `/research-note` separately; never invoke that skill automatically.
+Verification depth is not self-judged. A load-bearing premise has exactly two legal states:
+evidence attached (file:line, command output, or a version-matched document), or *awaiting
+verification* — the check was attempted and a named obstacle blocks it, recorded with what was
+tried, what blocks it, and what will unblock it, where the user sees it at ratification and the
+handoff blocks on it. There is no assumed-by-choice state: "checked enough", "obviously fine", and
+an unattempted check filed as an assumption are the exact evasions this rule exists to close. Stay
+targeted and never cap a check because the lookup grew — when a check is genuinely blocked, file
+the blocker and let the user rule. If the work exposes a broad evidence gap, record a precise
+research question. If it blocks the design, stop and let the user decide whether to start
+`/research-note` separately; never invoke that skill automatically.
 
 ## Develop and challenge the design
 
 - Describe the current state and the forces that constrain the design before selecting a solution.
 - Compare credible alternatives and make tradeoffs explicit. Record the chosen design, rationale,
-  rejected alternatives, consequences, assumptions, failure modes, and unresolved decisions.
+  rejected alternatives, consequences, failure modes, and unresolved decisions.
+- Every consequential decision carries a **premise register**: the load-bearing claims it rests on,
+  each marked *verified* (with this-session evidence — file:line of installed source, command
+  output, or a version-matched document), *awaiting verification* (the check was attempted; record
+  what was tried, the specific blocker, and what will unblock it), or *disproven* (the decision
+  reopens). Never present a decision for ratification over silent or unlabeled
+  premises, and never assert dependency runtime behavior — threading, retries, lifecycle, failure
+  modes — from recall. Verify cheap premises before presenting; route deep ones to a `verifier`
+  lane first, or present the ruling as explicitly conditional on the named verification. When in
+  doubt whether a claim is load-bearing, it is — the same tie-break-upward rule tiers use.
 - Specify the relevant architecture, components, data flows, interfaces, state transitions, operational
   behavior, security and privacy boundaries, migration or rollout, observability, testing, and acceptance
   evidence. Omit sections that genuinely do not apply.
 - Keep the design internally consistent and implementation-ready at the level requested. Do not edit
   production code, implement the feature, or expand into unrelated work.
-- Never invoke a Codex skill. The user may request `/codex-plan-review` separately after the complete
-  specification exists and before implementation when its exceptional-review criteria are met.
+- Invoke no Codex skill during design. The single exception is the premise audit the handoff step
+  runs on the completed specification; the user may additionally request `/codex-plan-review` at any
+  point after completion.
 
-Use subagents selectively for independent, read-heavy repository or web surveys — route those lanes to
-the `researcher` subagent, which returns a compact evidence memo — and for bounded specialist critiques
-such as security, performance, operations, or testability. Require compact findings with evidence
+Use subagents selectively: independent read-heavy repository or web surveys go to `researcher` lanes
+(compact evidence memo), load-bearing premise checks go to `verifier` lanes (verdict with
+falsification-grade evidence), and bounded specialist critiques — security, performance, operations,
+testability — to whichever fits. Require compact findings with evidence
 paths, not raw output. Prohibit subagents from editing the canonical note or implementation. Keep
 coupled design reasoning, user decision points, conflict resolution, and all vault writes in the
 orchestrator. Update the specification with any verified evidence or newly raised decision before
@@ -110,7 +130,20 @@ Write tags through the YAML `tags` property. Inspect existing vault tag values b
 
 ## Complete the handoff
 
-Verify the saved note path, primary type, inherited subject tags, Research wikilinks, media embeds, and
-that every implementation-sequence item carries a settled complexity tier. Summarize the settled
-decisions, remaining risks or research gaps, and the exact implementation entry point. Stop at the
-completed specification until the user separately authorizes implementation via `/implement`.
+Verify the saved note path, primary type, inherited subject tags, Research wikilinks, media embeds,
+that every implementation-sequence item carries a settled complexity tier, and that every decision's
+premise register is verified — or awaiting verification, with the attempt and its blocker recorded.
+A premise still awaiting verification is named in the handoff summary and becomes a binding stop
+condition in every implementation item that rests on it.
+
+When the sequence contains a `complex` item or any premise still awaits verification, run the
+`codex-plan-review` premise audit before declaring the specification implementation-ready (the user
+may wave it off). Its findings follow the reviewer rules: each must cite the spec decision or
+premise it challenges — a finding that introduces a design decision the owner has not made is
+contract invention, rejected not incorporated. Present every material finding to the user with its
+concrete scenario — when it occurs, when it does not, and its effect, in plain terms — and change
+the specification only on the user's ruling, never directly from the review.
+
+Summarize the settled decisions, remaining risks or research gaps, and the exact implementation
+entry point. Stop at the completed specification until the user separately authorizes implementation
+via `/implement`.

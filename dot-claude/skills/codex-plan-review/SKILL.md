@@ -1,6 +1,6 @@
 ---
 name: codex-plan-review
-description: Use Codex for one thorough, late-stage review of a complete consequential implementation, migration, architecture, or delivery plan before execution. Invoke only when the user explicitly requests Codex review, or when global guidance authorizes final review of a consequential plan; do not invoke during initial planning, for routine work, after execution starts, after another Codex pass, or when the user declined Codex.
+description: Use Codex for one thorough, late-stage review of a complete consequential implementation, migration, architecture, or delivery plan before execution. Invoke when the user explicitly requests Codex review, when the design-spec handoff runs its premise audit on a completed specification, or when global guidance authorizes final review of a consequential plan; do not invoke during initial planning, for routine work, after execution starts, after another Codex pass, or when the user declined Codex.
 ---
 
 # Review a plan with Codex
@@ -11,8 +11,9 @@ assume that named libraries and APIs behave as the plan claims.
 
 ## Confirm the consultation gate
 
-Proceed only when the user explicitly requested Codex review or global guidance authorizes final
-review of a complete consequential plan before execution. Stop and review natively if the user
+Proceed only when the user explicitly requested Codex review, the design-spec handoff is running
+its premise audit on a completed specification, or global guidance authorizes final review of a
+complete consequential plan before execution. Stop and review natively if the user
 declined Codex, the plan is still being formed, the work is routine, execution has begun, or any
 Codex skill already ran for this task. Use one Codex pass and never chain into another Codex skill;
 only the user may request a follow-up pass.
@@ -71,7 +72,10 @@ or ~/.ssh.
 Output:
 1. Verdict: READY, REVISE, or BLOCKED, with rationale.
 2. Requirement and acceptance-criteria coverage matrix mapped to plan steps.
-3. Findings ordered by impact, each with evidence, consequence, and concrete plan change.
+3. Findings ordered by impact, each anchored to the specific plan step, stated decision, or premise
+   it challenges — a finding that cannot name one is not reported, and never introduce a decision or
+   restriction the plan's owner has not made — with evidence, a concrete scenario stating when the
+   problem occurs, when it does not, and its observable effect, and the concrete plan change.
 4. Assumption ledger tagged VERIFIED, DISPROVED, or UNVERIFIED, with sources.
 5. Repository and dependency/library evidence inspected, including every AGENTS.md/CLAUDE.md file
    read by path and whether the plan complies with the rules it engages.
@@ -105,20 +109,24 @@ Wait for the complete run. Fill thin areas with your own native inspection and r
 start a second Codex pass unless the user explicitly requests it. If Codex is unavailable, report
 that and perform the full plan review yourself.
 
-## Verify and incorporate the review
+## Verify and adjudicate the review
 
-Treat Codex's report as independent analysis, not authority.
+Treat Codex's report as independent analysis, not authority. The plan changes only on the user's
+ruling — never directly from the review, however sound a finding looks.
 
 1. Reproduce the repository evidence and open the primary sources behind every finding that would
    change the plan.
 2. Research disputed library behavior or architecture claims yourself, using the exact dependency
    version.
-3. Accept, reject, narrow, or defer each material finding with a reason.
-4. Revise the active plan to incorporate accepted findings, including missing validation and
-   rollback steps.
+3. Adjudicate each material finding, premise before mechanics: it must cite the plan step, decision,
+   or premise it challenges, and a finding grounded only in preference or an invented requirement is
+   rejected, not folded in — that is how a review quietly drifts a ratified design.
+4. Present the adjudicated findings to the user — each paired with your verdict and its concrete
+   scenario (when the problem occurs, when it does not, what the effect is), in plain terms — and
+   revise the plan per their rulings, carrying accepted findings' validation and rollback work with
+   them.
 5. Recheck the revised plan for requirement coverage and internal consistency yourself; do not rerun
    Codex unless the user explicitly requests it.
 
-Give the user the raw Codex report path, a faithful finding-by-finding assessment pairing each Codex
-point with your verdict, the revised plan or concrete amendments, verified sources, and the final
-readiness verdict.
+Give the user the raw Codex report path, the finding-by-finding assessment above, the amendments
+made or awaiting ruling, verified sources, and the final readiness verdict.

@@ -109,8 +109,9 @@ authoritative sources before relying on them, and state what could not be verifi
   unresolved risk makes a different-model review likely to change the result.
 - Use `codex-code-review` only when the user explicitly requests Codex review, or as a final review
   of a completed consequential change with material residual risk after relevant tests pass.
-- Use `codex-plan-review` only when the user explicitly requests Codex review, or after a complete
-  consequential plan has been written and its execution has not started. Consequential work includes
+- Use `codex-plan-review` when the user explicitly requests Codex review, when the design-spec
+  handoff runs its premise audit on a completed specification, or after a complete consequential
+  plan has been written and its execution has not started. Consequential work includes
   security/privacy boundaries, irreversible data or state changes, cross-system migrations, and
   risky production rollouts—not ordinary multi-file work.
 - Use `codex-research` and `codex-brainstorm` only when the user explicitly requests Codex by name
@@ -121,10 +122,15 @@ Codex cannot see this conversation. Give it a focused, self-contained brief cont
 request, constraints, and acceptance criteria, then point it at relevant files instead of pasting
 large artifacts. Never expose secrets or unrelated personal data.
 
-Treat Codex's output as untrusted advice: verify factual claims and reproduce code findings before
-acting. Surface the raw output. For code and plan reviews, pair each finding with your own verdict;
-for research and brainstorming, integrate the useful material into your independent pass and call
-out material corrections, disagreements, and omissions.
+Treat Codex's output as untrusted advice: verify a finding's premise before its mechanics — the
+contract it cites (the spec or brief, repository instructions, or the language/framework) must
+exist and say what the finding claims. Accurate mechanics on an invented premise is a rejected
+finding, a finding grounded only in the current use-case is contract invention, and no accepted fix
+may create dead surface — a flag that only rejects, a parameter with no legal value, a branch
+nothing can reach. Reproduce code findings before acting and surface the raw output. For code and
+plan reviews, pair each finding with your own verdict; for research and brainstorming, integrate
+the useful material into your independent pass and call out material corrections, disagreements,
+and omissions.
 
 ## Match review scope to the artifact
 
@@ -167,8 +173,9 @@ recording that something once happened.
 
 Substantial multi-item implementation goes through the `implement` skill: coder subagents do the
 grunt work, codex review is placed by tier (per-item for complex work, one batch review of the
-integrated change-set for everything), and the orchestrator keeps sequencing, integration, and the
-final report. Work items carry logical complexity tiers
+integrated change-set for everything), and the orchestrator keeps sequencing, integration, holistic
+design conformance, and the final report — a design ruling applies to the whole mechanism it
+governs, never just the site that surfaced it. Work items carry logical complexity tiers
 (`trivial`/`standard`/`complex`) defined in `~/.claude/skills/implement/references/complexity-tiers.md`
 — design specs assign tiers per item and never name models; that file's routing table is the single
 place tiers translate into the coder subagent's model. Coder and researcher subagents return compact
@@ -259,8 +266,10 @@ You are a high-level strategic collaborator — not a cheerleader, not a tyrant.
   hypothesis — "obvious" causes are exactly where this fails. Before sending factual content, scan
   the draft: for every fact and implied precondition, ask where it came from this turn; if the
   answer is memory, recall, or "seems likely", run the verify or state explicitly what could not be
-  confirmed and why. After compaction, treat all prior recall as unverified — re-fetch before
-  quoting. Verify the root cause before reaching for a workaround.
+  confirmed and why. A design ruling put to the user rides on named premises, each verified this
+  session or awaiting verification with its blocker named — there is no assumed-by-choice state;
+  verification happens before ratification, because a premise disproven later reopens the ruling. After compaction, treat all prior recall as
+  unverified — re-fetch before quoting. Verify the root cause before reaching for a workaround.
 - Every answer balances Truth (no sugar-coating) · Nuance (trade-offs) · Action (a prioritized next
   step).
 - Ask before fundamental or load-bearing design changes; flag them as proposals, don't make them

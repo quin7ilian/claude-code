@@ -13,12 +13,17 @@ and judgment — not for the grunt work.
 
 **Spec-driven** (a Design spec is named or discoverable): open the spec in the Obsidian
 vault and extract the implementation sequence with its per-item complexity tiers. Do not
-re-derive decisions the spec has already settled. If any sequence item lacks a tier, tier
-it yourself and say so.
+re-derive decisions the spec has already settled — but do read each decision's premise
+register: a premise still awaiting verification becomes a binding stop condition in the
+brief of every item resting on it, whatever the tier, and a consequential spec with no
+register is flagged to the user before dispatch, not silently executed. If any sequence item lacks a tier,
+tier it yourself and say so.
 
 **Ad-hoc** (no spec): decompose the task into self-contained work items and assign each a
 tier using `references/complexity-tiers.md`. State the decomposition and tiers to the user
-before starting.
+before starting, under the same premise discipline a spec carries: name the load-bearing
+claims the decomposition rests on and each one's status — verified, or awaiting
+verification with its blocker named.
 
 ## Route each item
 
@@ -43,6 +48,21 @@ steering that changes the nature of the work re-tiers its item as if dispatched 
 and an item that lands in `complex` gets its plan, stop conditions, and tier routing — a
 new `coder-complex` window, not the window the steering happened to arrive in — before
 any coder proceeds.
+
+The same discipline governs scope: a mid-run ruling — user steering, a review
+adjudication, a spec amendment — applies to the mechanism it governs, never to the site
+that surfaced it. A ruling you propose to the user rides on named premises with status —
+verified this session (yourself or via a `verifier` lane), or awaiting verification with
+its blocker named — never on recall stated as fact. Before folding one into a running item or a fix brief, enumerate its
+blast radius by searching the tree: every implementation site, test, doc, and
+instruction file the ruled mechanism touches, including the machinery the ruling
+obsoletes — a superseded mechanism left standing is a residual violation, not a harmless
+leftover. The brief carries that list so the item conforms the whole mechanism, not the
+one symptom; where the ruling is mechanically checkable, the item also lands a permanent
+guard (a test or a lint on the mechanism's shape) so conformance stops depending on
+anyone's sweep. A ruling applied only where it was noticed leaves the rest of the tree
+quietly violating the ratified design, and every residual comes back later as a review
+finding that was yours to prevent.
 
 Each dispatch prompt is a self-contained work-item brief — the subagent cannot see this
 conversation. Include: the goal, acceptance criteria, constraints, the exact files
@@ -115,7 +135,12 @@ applies to the batch review. Surface it to the user instead of proceeding as if 
 
 ## Batch review of the integrated change-set
 
-After all items have landed and the full test suite passes:
+After all items have landed and the full test suite passes, sweep before you brief: walk
+the ratified design's load-bearing clauses against the integrated tree — targeted
+searches and reads of the actual wiring, never memory of what the briefs asked for — and
+turn every nonconformance into a work item now. You are the only reviewer who saw the
+design; codex checks code against a brief, so each residual it happens to catch costs a
+full adjudicate-and-fix round, and each one it misses ships. Then:
 
 1. Write a batch brief: the overall goal, the list of work items with their intent and
    acceptance criteria, spec references, the exact integrated diff/range, the absolute
@@ -163,10 +188,17 @@ Long runs cross usage-limit windows; treat interruption as normal, not exception
 - **Sequencing and dependencies** between items; re-briefing when an earlier item's
   outcome changes a later item's inputs.
 - **Integration**: cross-item consistency, interfaces between deliverables, a full
-  test-suite run, and the batch review above. If integration reveals a defect inside one
-  item, send it back to a coder with a focused brief rather than patching it inline.
+  test-suite run, the conformance sweep, and the batch review above. If integration
+  reveals a defect inside one item, send it back to a coder with a focused brief rather
+  than patching it inline.
+- **Design-vs-tree candor**: whenever you describe the implementation — mid-run answers,
+  status updates, the final report — describe what you verified on the tree this
+  session. Narrating the spec's intent in present tense is how a half-applied mechanism
+  stays invisible; where design and tree differ, say which is which.
 - **Spec status** (spec-driven case): update the Design note's implementation status as
   items land.
 - **The final report**: per-item summaries with their review status, the batch review
   verdict, rejected findings worth the user's attention, test results, and residual
-  risks. Report coder summaries faithfully — do not soften flagged items.
+  risks. Report coder summaries faithfully — do not soften flagged items — and present
+  every finding that reaches the user with its concrete scenario: when it occurs, when
+  it does not, and its effect, in plain terms rather than the reviewer's shorthand.
