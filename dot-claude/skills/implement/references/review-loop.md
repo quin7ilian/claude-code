@@ -22,6 +22,12 @@ round's findings are how the next round's findings get manufactured.
   touches and is dispatched to a fresh agent window with the invariant ledger in its
   brief — never authored inline from a long session whose context has been compacted or
   polluted.
+- **A fix that changes design is a deviation, not a fix.** A fix brief introducing a
+  mechanism-altitude element the ratified design does not carry — a new surface or
+  artifact, a behavioral change (what is refused, fabricated, deferred, conceded), a
+  workaround, a limitation — goes through the implement skill's deviation gate before
+  dispatch: disclosed with its concrete example, ruled or parked. Only a fix restoring
+  already-ratified behavior dispatches without a ruling.
 
 ## The living brief
 

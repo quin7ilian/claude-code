@@ -102,10 +102,12 @@ The workflow's rules and their rationale live in the artifacts themselves — th
 and verifier contracts, `references/complexity-tiers.md`, `bin/codex-review` — and are not restated
 here; if a rule is unclear from reading its artifact, fix the artifact. The one fact that spans
 them: finding discipline (named contracts, concrete failure scenarios, no dead surface), premise
-discipline (evidence attached or a recorded blocker, never assumed-by-choice), and the
-orchestrator's holistic duties are a single system mirrored across `bin/codex-review`, the
-implement, design-spec, and codex-plan-review skills, the coder contract, and
-`dot-claude/CLAUDE.md`. Relaxing one seat reopens the others — sweep them together or not at all.
+discipline (evidence attached or a recorded blocker, never assumed-by-choice), disclosure
+discipline (sign-off covers only its disclosed text; deviations from the ratified design return
+for ruling), and the orchestrator's holistic duties are a single system mirrored across
+`bin/codex-review`, the implement, design-spec, and codex-plan-review skills, the coder contract,
+and `dot-claude/CLAUDE.md`. Relaxing one seat reopens the others — sweep them together or not at
+all.
 
 ### Installation and repository instructions
 

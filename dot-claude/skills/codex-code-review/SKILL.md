@@ -71,7 +71,9 @@ Read the raw review exactly once. For every finding:
 2. Accept, reject, or narrow the finding explicitly; Codex is advice, not an authority.
 3. If the active request includes implementation, fix accepted findings and rerun the most relevant
    checks. Do not run another Codex pass unless the user explicitly requests it.
-4. Present each Codex point beside your verdict and action. Do not silently drop or soften findings.
+4. Present each Codex point beside your verdict and action, with its concrete scenario — when it
+   occurs, when it does not, and its observable effect, in plain terms rather than the reviewer's
+   shorthand. Do not silently drop or soften findings.
 
 Give the user the raw review file path, the paired assessment, the final verdict, and verified test
 results. Keep unverified concerns clearly labeled.

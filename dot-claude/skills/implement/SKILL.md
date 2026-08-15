@@ -77,6 +77,29 @@ never fill from the current use-case — an item returned blocked on an omission
 workflow working, so settle the decision here or with the user, record it, and
 re-dispatch.
 
+Settling a decision yourself does not ratify it. Sign-off covers only what its text
+disclosed, at the altitude it disclosed it: a goal-level ruling ratifies the goal, never
+the mechanism you chose to meet it, and a detail the disclosure omitted is a decision
+not ratified. Disclose design at mechanism altitude — the mechanisms, artifacts,
+observable behaviors, workarounds, and limitations the work will create, never
+code-level detail (signatures, arguments, internal structure) and never the goal
+restated — and give every disclosed element one concrete example showing it in action:
+what happens, under what conditions, and what the user observes. Abstraction is how an
+inversion hides: "one unified validation rule" reads as ratified, while "a
+configuration the ruling made legal is now refused at load" gets vetoed.
+
+Inside the signed-off design, implement without check-ins. The gate is deviation: a
+brief — initial or fix round — that would introduce or change a mechanism-altitude
+element the ratified design does not carry (a new surface, artifact, or data channel; a
+behavioral change — what is refused, fabricated, deferred, conceded; a workaround; a
+limitation; a scope extension; an interpretation of ambiguous intent) presents that
+delta for ruling before dispatch, each entry with its concrete example. A brief may
+exceed the disclosed design in mechanics, never in decisions; in doubt whether a detail
+is mechanics or a decision, it is a decision. When the user is unavailable, park the
+item with its delta recorded, continue items that do not depend on it, and lead the
+next report with the parked deltas — a parked item is the workflow working; an
+undisclosed mechanism built overnight is not.
+
 **Every brief opens with this block, filled in — copy it, do not paraphrase it:**
 
 ```text
