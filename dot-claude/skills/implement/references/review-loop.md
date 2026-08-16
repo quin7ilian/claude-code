@@ -28,6 +28,13 @@ round's findings are how the next round's findings get manufactured.
   workaround, a limitation — goes through the implement skill's deviation gate before
   dispatch: disclosed with its concrete example, ruled or parked. Only a fix restoring
   already-ratified behavior dispatches without a ruling.
+- **A mechanism-wide fix carries the orchestrator's own enumeration.** When a fix's
+  contract is "every site of X" — every read of a sentinel, every consumer of a rule,
+  every duplicate of a check — the orchestrator enumerates the sites itself before
+  dispatch (code graph, grep) and the brief carries the exhaustive list with a per-site
+  disposition the fix must return completed. A coder briefed with only the cited
+  instances fixes those instances, and the unswept remainder is the next round's
+  finding.
 
 ## The living brief
 
@@ -55,9 +62,21 @@ round's findings are how the next round's findings get manufactured.
 - Every fix lands with its pinning test, per `complexity-tiers.md`.
 - **Re-reviews cover the fix delta plus the full invariant ledger tree-wide.** A
   delta-only re-review is exactly how a local fix that violates a global invariant
-  escapes to the next round.
-- **Circuit breaker**: when two consecutive rounds each contain a regression introduced
-  by the previous round's fixes, stop the loop. Step back with the user — is the baseline
+  escapes to the next round. That is also the whole scope: no round re-grants a
+  free-form audit of the entire change-set or tree — an open audit returns a new
+  finding nearly every round on a change-set of any size, so a loop that carries one
+  cannot terminate. The change-set-wide audit belongs to the initial round, and runs
+  again only when the baseline moves.
+- **A pre-existing defect never extends the loop.** Its home is the Escalated class:
+  recorded, routed to the backlog or fork register, fixed after this gate closes. If
+  the owner rules it must be fixed now, that ruling closes the current gate rather than
+  widening it — the green change-set goes to the owner to land, and the adopted work
+  starts as its own item with its own loop against the new baseline. Folding it into
+  the open loop grows the diff every subsequent round must review, which is the
+  geometry that prevents convergence.
+- **Circuit breaker**: when two consecutive rounds each surface a defect introduced or
+  left behind by the previous round's fixes — a regression and an unswept remainder
+  trip it equally — stop the loop. Step back with the user — is the baseline
   right, is the diff still minimal, is the design itself the problem — and pair-author
   the remaining findings.
 - A loop that reaches its round limit returns with unresolved findings explicitly
