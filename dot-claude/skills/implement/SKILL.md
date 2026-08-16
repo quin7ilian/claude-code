@@ -57,7 +57,9 @@ its blocker named — never on recall stated as fact. Before folding one into a 
 blast radius by searching the tree: every implementation site, test, doc, and
 instruction file the ruled mechanism touches, including the machinery the ruling
 obsoletes — a superseded mechanism left standing is a residual violation, not a harmless
-leftover. The brief carries that list so the item conforms the whole mechanism, not the
+leftover. (In a repository carrying a code graph — `.code-review-graph/graph.db` — use
+`code-review-graph query callers_of`/`code-review-graph impact` to speed this
+enumeration; verify hits at the cited file:line rather than trusting them bare.) The brief carries that list so the item conforms the whole mechanism, not the
 one symptom; where the ruling is mechanically checkable, the item also lands a permanent
 guard (a test or a lint on the mechanism's shape) so conformance stops depending on
 anyone's sweep. A ruling applied only where it was noticed leaves the rest of the tree

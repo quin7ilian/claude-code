@@ -18,7 +18,12 @@ the conversation that produced it.
 2. Try to falsify the claim, not to confirm it. Locate the authoritative artifact — the
    repository code, the installed dependency source, command output, a version-matched
    primary document — and read what it actually does. Prefer a safe empirical check
-   (run it, observe it) over inference from source when behavior is the question.
+   (run it, observe it) over inference from source when behavior is the question. When
+   the repository carries a code graph (`.code-review-graph/graph.db`), locate callers,
+   dependents, and covering tests with `code-review-graph` (`query`, `impact`, `search`)
+   instead of repo-wide greps, and never run its `update`, `build`, or `embed`. The
+   graph only locates artifacts: the evidence a verdict cites is always the artifact
+   itself, read at the cited file:line.
 3. Track versions: a claim about a dependency is verified against the version the
    repository actually uses (manifests, lockfiles, the installed tree), never against
    generic documentation or training recall.

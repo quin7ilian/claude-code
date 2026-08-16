@@ -74,13 +74,21 @@ wrong; the invariant ledger; pointers to the repository discipline the patch mus
 and the repository's instruction files by absolute path, to be read first. Point at files
 rather than pasting artifacts; never name `.env` files, credentials, or key material.
 
-Run it like a review — non-interactive, kernel-sandboxed read-only, no model or effort
-flags, a unique output path:
+Run it like a review — non-interactive, no model or effort flags, a unique output path,
+an ephemeral scratch as the writable workspace so the repository stays kernel-enforced
+read-only:
 
 ```bash
-codex exec --skip-git-repo-check --sandbox read-only -C <repo-root> \
+SCRATCH="$(mktemp -d)"
+codex exec --skip-git-repo-check --sandbox workspace-write \
+  -c sandbox_workspace_write.network_access=true \
+  -c web_search=live \
+  -C "$SCRATCH" \
   "$(cat consult-brief.md)" </dev/null > consult-N.md 2> consult-N.stderr
 ```
+
+The brief names the repository by absolute path — the working directory is the scratch,
+not the repo.
 
 An empty or failed consult is a blocker, not an answer. Apply the returned patch with the
 normal editing tools, run the pinning test and the relevant suite, then re-review. The

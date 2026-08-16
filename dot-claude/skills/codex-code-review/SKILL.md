@@ -59,8 +59,9 @@ codex-review \
   --out "/absolute/path/to/codex-code-review.md"
 ```
 
-Codex runs in a kernel-enforced read-only sandbox and inherits the user's configured model and
-reasoning effort. If `codex-review` exits non-zero (Codex missing, unauthenticated, or failed), show
+Codex runs from an ephemeral scratch workspace with network and web access; the repository under
+review stays kernel-enforced read-only. Codex inherits the user's configured model and reasoning
+effort. If `codex-review` exits non-zero (Codex missing, unauthenticated, or failed), show
 the concise error and continue with your own review. Never treat an unavailable reviewer as a pass.
 
 ## Verify and respond

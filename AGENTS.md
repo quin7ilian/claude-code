@@ -6,10 +6,10 @@ and this file disagree, the code wins — fix this file.
 ## What this repo is
 
 A personal Claude Code setup: global guidance (`dot-claude/CLAUDE.md`), skills, subagent
-definitions, a Codex review-gate wrapper, and the session hooks that carry memory and repository
-instructions. `apply.sh` installs it (ownership-checked symlinks, MCP registration, settings merge).
-Hindsight is the long-term memory; Obsidian is the research/design vault; Codex is the only external
-model.
+definitions, a Codex review-gate wrapper, and the session hooks that carry memory, repository
+instructions, and code-graph watching. `apply.sh` installs it (ownership-checked symlinks, MCP
+registration, settings merge). Hindsight is the long-term memory; Obsidian is the research/design
+vault; Codex is the only external model.
 
 ## Conventions
 
@@ -20,11 +20,11 @@ model.
   unpinned subagents inherit the session effort, letting an expensive session silently spawn
   expensive subagents. Subagent bodies are contracts: self-contained briefs in, compact summaries
   out, never raw logs.
-- **Codex invocations** are non-interactive (`</dev/null`), sandboxed (`--sandbox read-only` for
-  reviews; `--sandbox workspace-write` with an ephemeral scratch `-C` for passes needing
-  web/network), and never pass model or effort flags — Codex inherits the user's own configuration.
-  Point Codex at files by absolute path instead of pasting large artifacts; never at secret-bearing
-  paths.
+- **Codex invocations** are non-interactive (`</dev/null`) and run `--sandbox workspace-write`
+  with an ephemeral scratch `-C` and network/web enabled — the writable workspace is the scratch
+  and `/tmp`, so the repository stays kernel-enforced read-only in every pass, reviews included.
+  Never pass model or effort flags — Codex inherits the user's own configuration. Point Codex at
+  files by absolute path instead of pasting large artifacts; never at secret-bearing paths.
 - **Python** is OS-python3, pure stdlib — no venv, no third-party dependencies. Hooks are fail-open:
   never block a turn, never print errors into a session, never log payloads or credentials.
 - **One home per rule.** The tier vocabulary and its model/effort/review tables live in

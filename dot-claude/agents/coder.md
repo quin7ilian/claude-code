@@ -30,8 +30,16 @@ something unclear, say so in your summary rather than inventing the answer.
 4. Follow the repository's conventions — its established patterns, idioms, and tooling.
    Ground every claim about the codebase in real files you have read this session.
 5. Read narrowly beyond that: the files the brief names plus what you must inspect to
-   verify your change. Use ranged reads on large files. Do not explore the repository
-   beyond the item's scope.
+   verify your change. Use ranged reads on large files. When the repository carries a
+   code graph (`.code-review-graph/graph.db`), explore through it before opening files:
+   locate with `code-review-graph search "<terms>"` and `code-review-graph query
+   file_summary <file>`, relate with `code-review-graph query
+   callers_of|callees_of|tests_for <symbol>` and `code-review-graph impact` — then read
+   only the files the graph names, to verify rather than to explore. Never run its
+   `update`, `build`, or `embed`: a background watcher is the graph's only writer. Its
+   output is navigation, not evidence — verify at the cited file:line before relying on
+   it, and never treat its risk scores as findings. Do not explore the repository beyond
+   the item's scope.
 6. Stay within the item's scope. If you discover adjacent problems, note them in your
    summary; do not fix them.
 7. Run the tests and checks relevant to your change and make them pass — including any

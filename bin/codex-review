@@ -3,9 +3,11 @@
 #
 # The review gate for coding deliverables: the caller writes a self-contained brief
 # (task, spec, acceptance criteria, exact diff range), this script appends the reviewer
-# contract and runs the Codex CLI over the repository in a kernel-enforced read-only
-# sandbox. Codex inherits the user's configured model and reasoning effort; no model or
-# effort flags are passed here. Runs on the ChatGPT subscription — no pay-per-token key.
+# contract and runs the Codex CLI from an ephemeral scratch workspace with network and
+# web access. The workspace-write sandbox covers only the scratch and /tmp, so the
+# repository under review stays kernel-enforced read-only. Codex inherits the user's
+# configured model and reasoning effort; no model or effort flags are passed here. Runs
+# on the ChatGPT subscription — no pay-per-token key.
 #
 # The review ends with a `verdict: PASS` or `verdict: NEEDS_CHANGES` line. A missing,
 # failed, or empty review exits non-zero — an unavailable reviewer is NEVER a pass.
@@ -41,6 +43,46 @@ if ! command -v codex >/dev/null 2>&1; then
   exit 1
 fi
 
+# A background watcher owns the graph's freshness; this only confirms one is running and
+# the graph is caught up before the brief tells the reviewer the graph exists. Codex runs
+# read-only, so a stale graph would go uncorrected for the whole review — the note is set
+# only when that confirmation succeeded, never to describe a stale graph as current.
+GRAPH_NOTE=""
+GRAPH_WATCH="$(dirname "$(dirname "$(readlink -f "$0")")")/scripts/start_graph_watch.py"
+if [ -f "$REPO/.code-review-graph/graph.db" ] && [ -f "$GRAPH_WATCH" ]; then
+  # A sync that finds no graph at all also exits 0, so the graph is re-checked after it: a
+  # graph removed mid-run leaves the note out rather than being described as current.
+  if python3 "$GRAPH_WATCH" --repo "$REPO" --sync \
+      && [ -f "$REPO/.code-review-graph/graph.db" ]; then
+    # __REPO__ is substituted below: the CLI resolves its repository from the working
+    # directory, which here is the scratch, so every example names the repository instead.
+    GRAPH_NOTE='
+
+## Code graph
+
+This repository carries a code graph, kept continuously current by a background watcher.
+Answer structural questions read-only with `code-review-graph` directly, naming the
+repository in every command — without `--repo` the CLI reads your scratch working directory
+and answers from an empty graph:
+`code-review-graph query --repo __REPO__ callers_of|callees_of|tests_for|importers_of|file_summary <symbol>`,
+`code-review-graph search --repo __REPO__ "<terms>"` (semantic when the repository has an
+embedding index), `code-review-graph detect-changes --repo __REPO__ --brief` (changed
+functions and test gaps). Prefer it over repository-wide greps for locating callers,
+dependents, and covering tests: orient with `code-review-graph architecture --repo __REPO__`
+or `code-review-graph communities --repo __REPO__` before opening unfamiliar files, pair
+`code-review-graph detect-changes --repo __REPO__ --brief` with
+`code-review-graph query --repo __REPO__ tests_for <symbol>` on changed functions to expose
+untested changes, and use `code-review-graph impact --repo __REPO__` for the blast radius of
+the current changes. Never run `update`, `build`, or `embed`: a background watcher is the
+only writer, and they would fail in this sandbox anyway. Its output is navigation only:
+verify anything it reports at the cited file:line before using it as evidence, and never
+treat its risk scores or savings estimates as findings.'
+    GRAPH_NOTE="${GRAPH_NOTE//__REPO__/$REPO}"
+  else
+    echo "codex-review: code graph freshness unverified — graph guidance omitted from the brief" >&2
+  fi
+fi
+
 CONTRACT='Act as a skeptical, evidence-driven code reviewer. Start with the specified git diff and
 changed files. Before judging anything, read the repository'"'"'s instruction files — AGENTS.md and
 CLAUDE.md at the repository root and in every directory the change touches, plus any files they
@@ -53,9 +95,12 @@ Challenge the implementation'"'"'s assumptions. Check the change against the tas
 acceptance criteria, and repository instructions. Pressure-test correctness, edge cases, failure
 handling, security boundaries, compatibility, concurrency/state behavior where relevant, and
 whether the tests genuinely prove the behavior rather than merely mirror the implementation.
-Run the smallest relevant tests or static checks that are safe in a read-only checkout. If a check
-requires repository writes, report the exact check that could not run and why. Never modify the
-working tree and never read secrets.
+The repository is kernel-enforced read-only; your working directory is an ephemeral scratch space
+and /tmp is writable — write probe scripts and artifacts there, and run the smallest relevant
+tests or static checks that need no repository writes. You have network and web access for
+documentation and fact-checking. If a check genuinely requires writing the repository itself,
+report the exact check that could not run and why. Never attempt to modify the repository and
+never read secrets.
 
 Return no more than 8 high-confidence, actionable findings. Omit speculative issues and style
 nits — but a rule written in a repository instruction file is a contract, never a nit: violating
@@ -83,29 +128,40 @@ report each violated rule as a finding. If you found no instruction files, say s
 this section makes the review incomplete. If there are no findings, say so plainly; do not invent
 issues.'
 
-PROMPT="$(cat "$BRIEF")
+PROMPT="## Repository under review
+
+${REPO} — kernel-enforced read-only. Your working directory is an ephemeral scratch
+space, not the repository: inspect the repository by absolute path and run git as
+\`git -C ${REPO} ...\`.
+
+$(cat "$BRIEF")$GRAPH_NOTE
 
 ## Reviewer contract
 
 $CONTRACT"
 
 ERR="$(mktemp "${TMPDIR:-/tmp}/codex-review.XXXXXX.stderr")"
-trap 'rm -f "$ERR"' EXIT
+SCRATCH="$(mktemp -d "${TMPDIR:-/tmp}/codex-review-scratch.XXXXXX")"
+trap 'rm -f "$ERR"; rm -rf "$SCRATCH"' EXIT
 
-# </dev/null: never block on interactive auth/TTY. The read-only sandbox lets Codex read
-# the repository and run safe checks while kernel-enforcement prevents any write.
+# </dev/null: never block on interactive auth/TTY. The workspace-write sandbox covers the
+# scratch cwd and /tmp only; kernel-enforcement prevents any write to the repository.
 set +e
 if [ -n "$OUT" ]; then
   codex exec --skip-git-repo-check \
-    --sandbox read-only \
-    -C "$REPO" \
+    --sandbox workspace-write \
+    -c sandbox_workspace_write.network_access=true \
+    -c web_search=live \
+    -C "$SCRATCH" \
     "$PROMPT" </dev/null >"$OUT" 2>"$ERR"
   STATUS=$?
   SIZE=$(wc -c <"$OUT" 2>/dev/null || echo 0)
 else
   OUTPUT="$(codex exec --skip-git-repo-check \
-    --sandbox read-only \
-    -C "$REPO" \
+    --sandbox workspace-write \
+    -c sandbox_workspace_write.network_access=true \
+    -c web_search=live \
+    -C "$SCRATCH" \
     "$PROMPT" </dev/null 2>"$ERR")"
   STATUS=$?
   SIZE=${#OUTPUT}

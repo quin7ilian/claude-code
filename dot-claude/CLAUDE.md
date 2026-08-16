@@ -91,6 +91,35 @@ silently substitute another storage location.
 Use the native WebSearch and WebFetch tools for current external facts. Open primary or
 authoritative sources before relying on them, and state what could not be verified.
 
+## Code navigation — the graph first, the tree second
+
+A repository that carries `.code-review-graph/graph.db` has an opt-in code graph, queried with the
+`code-review-graph` CLI directly. A background watcher keeps the graph and its semantic index
+current, so never sequence a refresh and never run `update`, `build`, or `embed` — the watcher is
+the graph's only writer — and never build a graph into a repository that lacks one, which is the
+user's decision per repository. In such a repository, exploration starts at the graph, never with
+whole-tree reads or repository-wide greps — the graph's token savings come from opening only the
+files it names:
+
+- **Orient** before opening any file: `code-review-graph status` (size, languages),
+  `code-review-graph architecture` and `communities` (module structure), `flows` (execution
+  paths, drill in with `flow`).
+- **Locate**: `code-review-graph search "<terms>"` for symbols and keywords;
+  `code-review-graph query file_summary|children_of <file>` for a file's contents.
+- **Relate**: `code-review-graph query callers_of|callees_of|imports_of|importers_of|tests_for|
+  inheritors_of <symbol>` for call chains and coverage; `code-review-graph impact` for the blast
+  radius of the current changes.
+- **Task shapes**: debugging traces from `search` through `callers_of`/`callees_of` and the
+  affected flows; review preparation pairs `impact` and `detect-changes --brief` with
+  `query tests_for` on each changed function to expose untested changes; refactoring scouts with
+  `dead-code`, `large-functions`, and `refactor` (preview only — edits land through the normal
+  editing tools, never an apply-refactor).
+- **Verify**: graph output is navigation, not evidence. Read the named files at the cited
+  file:line before asserting anything; risk scores and savings estimates are prioritization hints
+  at most, never findings or facts; a `dead-code` hit is a lead to falsify (dynamic dispatch,
+  registration, entry points), never a deletion list. A freshly saved edit takes a beat to reach
+  the graph; `code-review-graph status` carries the last update time when staleness is suspected.
+
 ## Grounding and exceptional different-prior review
 
 - Ground local-state claims—file contents, code paths, configuration, commands, tests, and installed

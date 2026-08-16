@@ -2,9 +2,9 @@
 """Merge the repository-owned session hooks into Claude Code settings.json.
 
 Manages the retention script under hooks.Stop and hooks.SessionEnd, the memory primer
-under hooks.SessionStart and hooks.SessionEnd, the instruction announcement under
-hooks.SessionStart, and the write gate under hooks.PreToolUse — plus the
-MAX_MCP_OUTPUT_TOKENS env default and the auto-memory switch.
+under hooks.SessionStart and hooks.SessionEnd, the instruction announcement and the code
+graph's watcher start under hooks.SessionStart, and the write gate under
+hooks.PreToolUse — plus the MAX_MCP_OUTPUT_TOKENS env default and the auto-memory switch.
 
 Everything else in the settings file — foreign hooks, unknown keys, user tuning — is
 preserved byte-for-byte. Handlers left behind by retired tooling (cc-retain,
@@ -37,6 +37,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--primer-script", required=True, type=Path)
     parser.add_argument("--instructions-script", required=True, type=Path)
     parser.add_argument("--gate-script", required=True, type=Path)
+    parser.add_argument("--graph-watch-script", required=True, type=Path)
     parser.add_argument("--env-file", required=True, type=Path)
     parser.add_argument("--state-dir", required=True, type=Path)
     return parser.parse_args()
@@ -148,6 +149,8 @@ def merge_settings(
     instructions_script: Path | None = None,
     gate_cmd: str | None = None,
     gate_script: Path | None = None,
+    graph_watch_cmd: str | None = None,
+    graph_watch_script: Path | None = None,
 ) -> dict[str, Any]:
     hooks = document.setdefault("hooks", {})
     if not isinstance(hooks, dict):
@@ -182,6 +185,14 @@ def merge_settings(
     if instructions_cmd is not None and instructions_script is not None:
         _ensure_owned_entry(
             hooks, "SessionStart", instructions_cmd, instructions_script, timeout=5
+        )
+
+    # A repository carrying a code graph gets its background watcher started here, so the
+    # graph a session navigates by is current without any agent sequencing a refresh. The
+    # hook spawns the work detached and returns immediately.
+    if graph_watch_cmd is not None and graph_watch_script is not None:
+        _ensure_owned_entry(
+            hooks, "SessionStart", graph_watch_cmd, graph_watch_script, timeout=5
         )
 
     # Writes are gated on having read the repository's AGENTS.md. This fires for subagent
@@ -270,6 +281,10 @@ def main() -> int:
             str(args.env_file.absolute()),
         )
     )
+    graph_watch_cmd = " ".join(
+        shlex.quote(argument)
+        for argument in (str(args.python.resolve()), str(args.graph_watch_script.absolute()))
+    )
     try:
         document = load_settings(args.settings)
         merge_settings(
@@ -282,12 +297,14 @@ def main() -> int:
             args.instructions_script.absolute(),
             gate_cmd,
             args.gate_script.absolute(),
+            graph_watch_cmd,
+            args.graph_watch_script.absolute(),
         )
         write_settings(args.settings, document)
     except ValueError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
-    print(f"  configured retention, primer, and repo-instruction hooks in {args.settings}")
+    print(f"  configured session hooks in {args.settings}")
     return 0
 
 

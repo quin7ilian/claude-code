@@ -24,6 +24,8 @@ INSTRUCTIONS = Path("/home/user/.claude/hooks/inject_repo_instructions.py")
 INSTRUCTIONS_CMD = f"/usr/bin/python3 {INSTRUCTIONS}"
 GATE = Path("/home/user/.claude/hooks/gate_repo_instructions.py")
 GATE_CMD = f"/usr/bin/python3 {GATE}"
+GRAPH_WATCH = Path("/home/user/.claude/hooks/start_graph_watch.py")
+GRAPH_WATCH_CMD = f"/usr/bin/python3 {GRAPH_WATCH}"
 
 
 def owned_command() -> str:
@@ -188,6 +190,8 @@ class SettingsConfigTests(unittest.TestCase):
             INSTRUCTIONS,
             GATE_CMD,
             GATE,
+            GRAPH_WATCH_CMD,
+            GRAPH_WATCH,
         )
 
         session_start = [
@@ -197,7 +201,12 @@ class SettingsConfigTests(unittest.TestCase):
         ]
         self.assertEqual(
             session_start,
-            ["python3 /tmp/keep.py", owned_primer_command(), INSTRUCTIONS_CMD],
+            [
+                "python3 /tmp/keep.py",
+                owned_primer_command(),
+                INSTRUCTIONS_CMD,
+                GRAPH_WATCH_CMD,
+            ],
         )
 
         # SessionEnd carries both owned scripts: retention, then the cache refresh.
@@ -228,12 +237,23 @@ class SettingsConfigTests(unittest.TestCase):
                 INSTRUCTIONS,
                 GATE_CMD,
                 GATE,
+                GRAPH_WATCH_CMD,
+                GRAPH_WATCH,
             )
             return json.dumps(document, sort_keys=True)
 
         document: dict = {}
         first = merge(document)
         self.assertEqual(merge(document), first)
+
+        # Every owned SessionStart entry survives repeated merges exactly once.
+        session_start = [
+            handler.get("command")
+            for group in document["hooks"]["SessionStart"]
+            for handler in group.get("hooks", [])
+        ]
+        for command in (owned_primer_command(), INSTRUCTIONS_CMD, GRAPH_WATCH_CMD):
+            self.assertEqual(session_start.count(command), 1)
 
     def test_unreadable_or_non_object_settings_files_are_refused(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:

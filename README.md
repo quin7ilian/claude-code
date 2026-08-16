@@ -21,6 +21,10 @@ Everything is version-controlled so the machine is reproducible. `apply.sh` inst
   mandatory review gate inside the implementation workflow.
 - **Repository instructions are enforced.** `AGENTS.md` is not loaded natively by Claude Code, so a
   hook announces it and a write gate requires it — and your standing rules — to have been read.
+- **Code navigation is graph-first.** A repository that opts in carries a
+  [code-review-graph](https://github.com/tirth8205/code-review-graph) kept current by a background
+  watcher; agents and Codex query callers, blast radius, and test coverage from it instead of
+  grepping the tree.
 
 ## The split
 
@@ -29,6 +33,7 @@ Everything is version-controlled so the machine is reproducible. `apply.sh` inst
 | Orchestration, design, research synthesis | Session model | main loop |
 | Implementation | `coder` / `coder-complex` subagent — model per tier | Task tool |
 | Bulk retrieval | `researcher` subagent | Task tool |
+| Claim verification | `verifier` subagent | Task tool |
 | Code/plan review, second-prior research | Codex (ChatGPT subscription, no API key) | `codex exec`, sandboxed |
 | Long-term memory | Hindsight (self-hosted) | MCP + REST hooks |
 | Research/design artifacts | Obsidian vault | MCP |
@@ -40,6 +45,8 @@ expensive session never silently spawns expensive subagents:
 - `coder`: `high` — standard items have no plan and no per-item review, so its own judgment carries
   them.
 - `coder-complex`: `xhigh` — where Opus performs at its best on hard work.
+- `verifier`: `high` — falsification-grade checks on load-bearing claims before they are ratified
+  into a design or relayed as fact.
 - `researcher`: `medium` — retrieval sweeps.
 
 ## Memory
@@ -107,7 +114,8 @@ into models and efforts, so a model-lineup change is a one-file edit and existin
   escalates to a Codex consult (pair mode) on countable evidence, never as a default.
 - **Resume, don't redo** — interrupted runs restart from the spec and working tree.
 
-Codex review runs through [bin/codex-review](bin/codex-review) in a read-only sandbox and ends in a
+Codex review runs through [bin/codex-review](bin/codex-review) from an ephemeral scratch workspace
+with network access — the repository under review stays kernel-enforced read-only — and ends in a
 PASS/NEEDS_CHANGES verdict. An unavailable reviewer is a blocker, never a pass.
 
 ## Repository instructions
@@ -181,11 +189,34 @@ Requires `claude` logged in, OS `python3` (3.10+), and the `codex` CLI logged in
    Re-running is always safe.
 4. Restart Claude Code sessions.
 
+### Code graph (optional)
+
+The graph-first navigation activates only in repositories that carry a
+[code-review-graph](https://github.com/tirth8205/code-review-graph) database; everywhere else the
+instructions are inert. To set it up:
+
+1. `pipx install code-review-graph` — the CLI must be on PATH for the agents and the watcher hook.
+2. Add the semantic-search stack into the same venv:
+   `pipx runpip code-review-graph install 'sentence-transformers<6,>=3.0.0'`. (Plain
+   `pipx inject code-review-graph 'code-review-graph[embeddings]'` resolves the package as already
+   satisfied and installs nothing.) This pulls torch — several GB with CUDA wheels — and the watcher
+   uses the GPU when one is present. Skipping this step is fine: search degrades to keyword FTS.
+3. Opt a repository in: `code-review-graph build && code-review-graph embed` at its root, and add
+   `.code-review-graph/` to its `.gitignore`. The first `embed` downloads the `all-MiniLM-L6-v2`
+   model (~90 MB) from Hugging Face.
+4. Nothing else. The `SessionStart` hook starts a detached background watcher — the graph's only
+   writer — that keeps the graph, keyword index, and vectors current within about a second of every
+   save, and the review gate verifies freshness before telling Codex the graph exists. The watcher
+   is left running between sessions; kill it freely, the next session restarts it after a catch-up.
+
 ## Security posture
 
-- Codex never receives Hindsight or Obsidian access — those MCP connections are Claude-only. It runs
-  kernel-sandboxed: read-only for reviews, writes confined to an ephemeral scratch directory for
-  research passes. Briefs must never point it at `.env` files, credentials, or key material.
+- This setup registers the Hindsight and Obsidian MCP servers for Claude only; it grants Codex no
+  access to either. Codex runs kernel-sandboxed in every pass: writes are confined to an ephemeral
+  scratch directory and `/tmp`, so the repository under review stays read-only, while network and
+  web access are enabled — a deliberate trade, so briefs must never point it at `.env` files,
+  credentials, or key material, and reviewing repositories containing untrusted content is a
+  conscious decision.
 - Retained memory is conversation-only: tool output is structurally excluded before anything leaves
   the machine, and secret patterns are redacted on top.
 - `apply.sh` never echoes tokens; settings and state files are written `0600`.
