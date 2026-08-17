@@ -114,11 +114,22 @@ files it names:
   `query tests_for` on each changed function to expose untested changes; refactoring scouts with
   `dead-code`, `large-functions`, and `refactor` (preview only — edits land through the normal
   editing tools, never an apply-refactor).
-- **Verify**: graph output is navigation, not evidence. Read the named files at the cited
-  file:line before asserting anything; risk scores and savings estimates are prioritization hints
-  at most, never findings or facts; a `dead-code` hit is a lead to falsify (dynamic dispatch,
-  registration, entry points), never a deletion list. A freshly saved edit takes a beat to reach
-  the graph; `code-review-graph status` carries the last update time when staleness is suspected.
+- **Cite by claim class** — an edge proves what it parsed, and nothing more:
+  - *Structural existence* (this call, import, inheritance, or test edge exists, at this
+    file:line) — the graph is sufficient evidence on its own; cite the edge and its location
+    rather than re-reading the file to confirm it. "`runner.py:212` still calls the helper the
+    change was supposed to orphan" is proven the moment `callers_of` returns it.
+  - *Absence* (nothing calls it, the removal is complete, it is dead) — never from the graph
+    alone. It cannot see dynamic dispatch, string-keyed registration, event-topic subscriptions,
+    config-declared entry points, or cross-language calls, and reports every one of them as zero
+    callers. Corroborate with a targeted search first; `dead-code` is a list of leads to falsify.
+  - *Content* (what a call passes, what a branch tests, what a default is) — always read the
+    file. The graph stores declared signatures and call sites, never argument values; its line
+    number stays a trustworthy location even when a claim about what sits on that line is not.
+
+  Risk scores and savings estimates are prioritization hints at most, never findings or facts. A
+  freshly saved edit takes a beat to reach the graph; `code-review-graph status` carries the last
+  update time when staleness is suspected.
 
 ## Grounding and exceptional different-prior review
 

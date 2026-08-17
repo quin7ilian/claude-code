@@ -21,9 +21,13 @@ the conversation that produced it.
    (run it, observe it) over inference from source when behavior is the question. When
    the repository carries a code graph (`.code-review-graph/graph.db`), locate callers,
    dependents, and covering tests with `code-review-graph` (`query`, `impact`, `search`)
-   instead of repo-wide greps, and never run its `update`, `build`, or `embed`. The
-   graph only locates artifacts: the evidence a verdict cites is always the artifact
-   itself, read at the cited file:line.
+   instead of repo-wide greps, and never run its `update`, `build`, or `embed`. An edge
+   is falsification-grade evidence for what it parsed: one `callers_of` hit disproves
+   "nothing calls this" outright, at its file:line. The converse never holds — the graph
+   reports dynamic dispatch, string-keyed registration, and config-declared entry points
+   as zero callers, so it can fail to disprove an absence claim but never verify one.
+   For what a call passes or a branch tests, the artifact itself is the evidence, read
+   at the cited line.
 3. Track versions: a claim about a dependency is verified against the version the
    repository actually uses (manifests, lockfiles, the installed tree), never against
    generic documentation or training recall.

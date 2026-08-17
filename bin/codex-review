@@ -74,9 +74,14 @@ or `code-review-graph communities --repo __REPO__` before opening unfamiliar fil
 `code-review-graph query --repo __REPO__ tests_for <symbol>` on changed functions to expose
 untested changes, and use `code-review-graph impact --repo __REPO__` for the blast radius of
 the current changes. Never run `update`, `build`, or `embed`: a background watcher is the
-only writer, and they would fail in this sandbox anyway. Its output is navigation only:
-verify anything it reports at the cited file:line before using it as evidence, and never
-treat its risk scores or savings estimates as findings.'
+only writer, and they would fail in this sandbox anyway. An edge is admissible evidence for
+a structural finding — this call, import, inheritance, or test exists at this file:line —
+and the repository is frozen read-only for this review, so what the graph reports is what
+the tree holds. Read the file for what a call passes, what a branch tests, or what a default
+is: the graph stores declared signatures and call sites, never argument values. Never assert
+an absence — no remaining caller, dead code, a completed removal — from the graph alone,
+since it reports dynamic dispatch, string-keyed registration, and config-declared entry
+points as zero callers. Never treat its risk scores or savings estimates as findings.'
     GRAPH_NOTE="${GRAPH_NOTE//__REPO__/$REPO}"
   else
     echo "codex-review: code graph freshness unverified — graph guidance omitted from the brief" >&2

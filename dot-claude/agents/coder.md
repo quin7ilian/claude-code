@@ -36,10 +36,14 @@ something unclear, say so in your summary rather than inventing the answer.
    file_summary <file>`, relate with `code-review-graph query
    callers_of|callees_of|tests_for <symbol>` and `code-review-graph impact` — then read
    only the files the graph names, to verify rather than to explore. Never run its
-   `update`, `build`, or `embed`: a background watcher is the graph's only writer. Its
-   output is navigation, not evidence — verify at the cited file:line before relying on
-   it, and never treat its risk scores as findings. Do not explore the repository beyond
-   the item's scope.
+   `update`, `build`, or `embed`: a background watcher is the graph's only writer. An
+   edge proves what it parsed — that a call, import, or test exists at a line — and
+   nothing more: read the file before relying on what a call passes or what a branch
+   tests, and never conclude from the graph alone that nothing else uses what you are
+   changing, since it reports dynamic dispatch, string-keyed registration, and
+   config-declared entry points as zero callers. Your own just-saved edits take a beat
+   to reach it. Never treat its risk scores as findings. Do not explore the repository
+   beyond the item's scope.
 6. Stay within the item's scope. If you discover adjacent problems, note them in your
    summary; do not fix them.
 7. Run the tests and checks relevant to your change and make them pass — including any
