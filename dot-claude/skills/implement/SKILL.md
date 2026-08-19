@@ -70,14 +70,21 @@ Each dispatch prompt is a self-contained work-item brief — the subagent cannot
 conversation. Include: the goal, acceptance criteria, constraints, the exact files
 involved, decisions already made, anything from the spec the item depends on, and the
 item's tier with its review requirement (`complex` → per-item review; `trivial`/
-`standard` → review deferred to the batch). Design is not delegable: any contract,
-interface, or surface shape the item introduces is settled before it reaches a coder —
-by the spec, the user, or you — whether it travels in a brief or a mid-run relay. A
-dispatch that leaves one open is malformed. The mirror rule binds downstream: what the
-spec and brief leave unstated is a decision not made, which coders and reviewers may
-never fill from the current use-case — an item returned blocked on an omission is the
-workflow working, so settle the decision here or with the user, record it, and
-re-dispatch.
+`standard` → review deferred to the batch). **Acceptance criteria carry concrete
+observable values, not prose** — the scenario and the exact result it must produce ("a
+request arriving after the window closes is refused with 409, not queued"); for a fix,
+the defect scenario and the value correct behavior yields there. A coder handed prose
+derives its expected values from the code it just wrote, so its tests confirm the
+implementation instead of the specification and pass just as green when the
+implementation is wrong. This is the only point in the workflow where those values can
+still come from somewhere other than the code — you hold the spec and the ledger; the
+coder holds neither. Design is not delegable: any contract, interface, or surface shape
+the item introduces is settled before it reaches a coder — by the spec, the user, or you
+— whether it travels in a brief or a mid-run relay. A dispatch that leaves one open is
+malformed. The mirror rule binds downstream: what the spec and brief leave unstated is a
+decision not made, which coders and reviewers may never fill from the current use-case —
+an item returned blocked on an omission is the workflow working, so settle the decision
+here or with the user, record it, and re-dispatch.
 
 Settling a decision yourself does not ratify it. Sign-off covers only what its text
 disclosed, at the altitude it disclosed it: a goal-level ruling ratifies the goal, never
@@ -186,8 +193,9 @@ full adjudicate-and-fix round, and each one it misses ships. Then:
    shape the fix yourself where the reviewer's shape is wrong — no fix may create dead
    surface (a flag that only rejects, a parameter with no legal value, a branch nothing
    can reach). Dispatch accepted findings back to coders as focused fix briefs. A fix
-   inherits the tier of the code it touches, ships with a pinning test, and its
-   authorship escalates per the ladder in `references/complexity-tiers.md`. Re-review the fix delta plus the invariant ledger
+   inherits the tier of the code it touches, ships with a pinning test that ran red
+   before the fix existed, and its authorship escalates per the ladder in
+   `references/complexity-tiers.md`. Re-review the fix delta plus the invariant ledger
    tree-wide — a delta-only re-review cannot see a fix that breaks a global invariant.
 4. Loop until PASS or return with unresolved findings explicitly flagged to the user.
    The moment a loop starts, run it per `references/review-loop.md` — living brief,

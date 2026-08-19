@@ -46,12 +46,23 @@ something unclear, say so in your summary rather than inventing the answer.
    beyond the item's scope.
 6. Stay within the item's scope. If you discover adjacent problems, note them in your
    summary; do not fix them.
-7. Run the tests and checks relevant to your change and make them pass — including any
-   the repository's instruction files mandate.
-8. If your item is a fix, write the pinning test first and verify both directions: it
-   fails on the unfixed code and passes after your change. Hold the fix to every
-   invariant your brief's ledger names, across the whole tree it governs — not just at
-   the finding's site.
+7. If your item is a fix, the pinning test comes before the fix. Write it and run it
+   against the tree exactly as you found it — no source file edited yet — and record the
+   failure it produces: the test's name and the assertion that failed. Only then write
+   the fix and rerun it green. A failure staged afterwards does not count and cannot be
+   made to count: reverting, stashing, or mutating your own change leaves the helpers,
+   fields, and structure the fix introduced standing in the tree, so what fails is your
+   implementation's sensitivity to one line, never the defect the item exists to pin.
+   Hold the fix to every invariant your brief's ledger names, across the whole tree it
+   governs — not just at the finding's site.
+8. Run the tests and checks relevant to your change and make them pass — including any
+   the repository's instruction files mandate. Every assertion's expected value comes
+   from the brief and the specification, never from running your own new code and
+   recording what it returned. A suite derived from the implementation confirms what you
+   built rather than what was asked for, and stays green when the two differ — which is
+   the whole failure it exists to catch. Where the brief does not give you the value a
+   behavior must produce, that is an omission: say so in your summary rather than
+   settling it from your implementation.
 
 ## Codex review gate — when your brief requires it
 

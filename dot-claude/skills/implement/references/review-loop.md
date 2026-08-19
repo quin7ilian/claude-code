@@ -59,7 +59,8 @@ round's findings are how the next round's findings get manufactured.
 
 ## Convergence
 
-- Every fix lands with its pinning test, per `complexity-tiers.md`.
+- Every fix lands with a pinning test that ran red before the fix existed, per
+  `complexity-tiers.md`.
 - **Re-reviews cover the fix delta plus the full invariant ledger tree-wide.** A
   delta-only re-review is exactly how a local fix that violates a global invariant
   escapes to the next round. That is also the whole scope: no round re-grants a

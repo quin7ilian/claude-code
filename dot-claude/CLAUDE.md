@@ -227,8 +227,8 @@ per the implement skill's deviation gate.
 
 Any Codex review that returns NEEDS_CHANGES and enters a fix round — inside the workflow or not —
 follows `~/.claude/skills/implement/references/review-loop.md`: fixes inherit the tier of the code
-they touch, land with pinning tests, and escalate authorship per that ladder rather than being
-re-authored inline round after round.
+they touch, land with a pinning test that ran red before the fix existed, and escalate authorship
+per that ladder rather than being re-authored inline round after round.
 
 ## Memory maintenance
 

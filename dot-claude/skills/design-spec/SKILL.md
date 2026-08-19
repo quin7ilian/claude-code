@@ -69,7 +69,9 @@ research question. If it blocks the design, stop and let the user decide whether
   doubt whether a claim is load-bearing, it is — the same tie-break-upward rule tiers use.
 - Specify the relevant architecture, components, data flows, interfaces, state transitions, operational
   behavior, security and privacy boundaries, migration or rollout, observability, testing, and acceptance
-  evidence. Omit sections that genuinely do not apply.
+  evidence — the last stated per item as concrete observable values (the scenario and the exact result
+  it must produce), never prose alone: an implementer handed prose derives its test assertions from the
+  code it just wrote. Omit sections that genuinely do not apply.
 - Keep the design internally consistent and implementation-ready at the level requested. Do not edit
   production code, implement the feature, or expand into unrelated work.
 - Invoke no Codex skill during design. The single exception is the premise audit the handoff step

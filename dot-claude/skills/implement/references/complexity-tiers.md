@@ -74,10 +74,11 @@ review. Review findings land in exactly the code that earned the strictest scaff
 giving their fixes less scrutiny than the original work is how a fix loop manufactures its
 own next round.
 
-Every fix ships with a pinning test written first and verified in both directions: it
-fails on the unfixed code and passes after. An invariant that findings hit in two separate
-rounds gets a permanent deterministic guard — a test or a lint — so holding it stops
-depending on review at all.
+Every fix ships with a pinning test that ran red against the unfixed tree before the fix
+existed — a failure staged afterwards by reverting or mutating the fix does not satisfy
+this, and the coder contract carries the mechanics. An invariant that findings hit in two
+separate rounds gets a permanent deterministic guard — a test or a lint — so holding it
+stops depending on review at all.
 
 ### Authorship escalation (pair mode)
 
