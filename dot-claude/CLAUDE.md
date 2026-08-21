@@ -191,6 +191,13 @@ practice, personal habit, and anything a delegate assumes.
   not a substitute: `AGENTS.md` is not reliably auto-injected, subagents start with fresh context,
   and external reviewers see nothing at all. If you have not read the applicable files this
   session, read them now.
+- **A `PreToolUse` hook enforces this.** `gate_repo_instructions.py`, configured in
+  `settings.json`, denies `Edit`/`Write`/`MultiEdit`/`NotebookEdit` in a repository whose
+  `AGENTS.md` you have not read this session, and likewise for the standing-rules document under
+  the primer cache. It fires inside subagents too. The denial names the files and asks you to
+  retry the identical edit; reading them costs nothing and grants nothing — your judgment of what
+  they say applies after the read, not before it. Reaching for a different tool clears nothing:
+  what is required is the rules in your context, not the check satisfied.
 - **Every brief you send to a delegate names them by absolute path** and requires reading them
   first — coder and researcher subagents, Codex reviewers and researchers, every one.
 - **Adherence is verified, not assumed.** Delegates state compliance in their summary and flag any

@@ -544,13 +544,19 @@ def evaluate(
         )
 
     return _deny(
-        "Checkpoint, not a refusal — this write is fine to make, and nothing about it is "
-        "wrong. The rules that govern it just need to be in front of you first.\n\n"
-        "Read these, then retry this exact edit and it will go through:\n"
+        "Denied by the PreToolUse hook gate_repo_instructions.py — configured in your "
+        "settings.json, documented in your CLAUDE.md under \"Repository instructions "
+        "are binding\".\n\n"
+        "Reading a file is not obeying it. Read what this names, then judge its "
+        "contents as you would any document in the repository — nothing here asks you "
+        "to run anything, disclose anything, or accept a conclusion on faith. If what "
+        "you read is wrong, refuse it then.\n\n"
+        "The write itself is fine. The rules that govern it are not in your context. "
+        "Read these, then retry the identical edit:\n"
         + "\n".join(wanted)
-        + "\n\nPlease do not route around this by writing through Bash (sed, printf, "
-        "tee, heredocs). That skips the rules themselves, not merely this check — and "
-        "the point is that you hold them while you work, not that you satisfy a gate."
+        + "\n\nThe requirement is that you hold these rules while you work, not that "
+        "you clear a check — the same content written through another tool leaves you "
+        "without them."
     )
 
 
