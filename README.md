@@ -14,7 +14,9 @@ Everything is version-controlled so the machine is reproducible. `apply.sh` inst
 - **Hindsight is the only memory store.** Every turn is retained automatically, every session opens
   with a memory primer, and the agent recalls on demand rather than guessing. No local fact files.
 - **Obsidian is the knowledge vault.** `/research-note` and `/design-spec` build durable notes under
-  `Research/` and `Design/`, patched as decisions land rather than dumped at the end.
+  `Research/` and `Design/`, patched as decisions land rather than dumped at the end — and shaped by a
+  [note standard](dot-claude/skills/design-spec/references/vault-note-standard.md) and templates, so
+  a spec reads as a reviewed document, not the agent's scratchpad.
 - **Work is tiered.** The session model plans, steers, and reviews; subagents on tier-mapped models
   execute and retrieve.
 - **Codex is the second prior.** Gated skills for review, research, and ideation — plus the
@@ -36,7 +38,7 @@ Everything is version-controlled so the machine is reproducible. `apply.sh` inst
 | Claim verification | `verifier` subagent | Task tool |
 | Code/plan review, second-prior research | Codex (ChatGPT subscription, no API key) | `codex exec`, sandboxed |
 | Long-term memory | Hindsight (self-hosted) | MCP + REST hooks |
-| Research/design artifacts | Obsidian vault | MCP |
+| Research/design artifacts | Obsidian vault | `mcpvault` over stdio |
 
 Effort is pinned per subagent definition, since there is no per-invocation override — so an
 expensive session never silently spawns expensive subagents:
@@ -91,6 +93,26 @@ merge) because local fact files go stale silently while Hindsight reconciles ser
 thing kept on disk is the primer cache. Remember requests route to Hindsight; standing behavioral
 rules to the repo-owned `CLAUDE.md` or a Hindsight directive; repository facts to that repository's
 own instruction file.
+
+## Vault notes
+
+A design spec or research note is a document for principal-engineer review, so its shape is fixed
+rather than left to the agent: a closed, numbered section set from a template; a five-line status
+block that is the note's whole state (status, phase, next step, last decision, open counts, body
+size); registers with stable ids (`R-n` requirements, `A-n` acceptance rows, `W-n` work items,
+`P-n` premises, `Q-n` questions, `D-n` decisions) that the body references by id; a body that holds
+current state only; and a decision log — the note's version control — that holds every change as a
+row. Tags are a contract: frontmatter only, one primary `type/*`, established `topic/*` /
+`strategy/*` / `platform/*` values, a new value only after the user's ruling recorded as a `T-n`
+row.
+
+Enforcement is prompt-level, the way spec-kit does it: the templates carry each section's
+contract as HTML comments (invisible in Obsidian, present on every agent re-read), every write is
+one of the standard's named operations, and the checkpoint operation — before compaction, before a
+subagent batch, at handoff — re-reads the outline and status block against the template and fixes
+drift. Nothing is mechanical. Vagueness and testability
+of requirements are judgment, not shape: the handoff review reads the `R-n`/`A-n` registers with a
+requirements-quality lens and reports findings for the user's ruling.
 
 ## Implementation workflow
 
@@ -177,16 +199,19 @@ per-deliverable gate and pair-mode fix consults inside `/implement` are the deli
 ## Install
 
 Requires `claude` logged in, OS `python3` (3.10+), and the `codex` CLI logged in via ChatGPT
-(`codex login status`) for the review gate and Codex skills.
+(`codex login status`) for the review gate and Codex skills. The vault workflows additionally need
+[`mcpvault`](https://github.com/bitbonsai/mcpvault) installed and a `node` >= 20 on `PATH`.
 
-1. `cp .env.example ~/.claude/.env` and fill in the Hindsight and Obsidian credentials. Optionally
+1. `cp .env.example ~/.claude/.env` and fill in the Hindsight credentials plus `OBSIDIAN_VAULT_PATH`
+   (the vault directory itself — mcpvault reads it locally, so there is no Obsidian secret). Optionally
    set `HINDSIGHT_USER_TAG` to tag retained memories with `user:<value>` — useful when a bank holds
    memories from more than one person or agent.
 2. Move any personal `~/.claude/CLAUDE.md` aside; the installer refuses to replace files it does not
    own.
-3. `./apply.sh` — symlinks guidance, skills, agents, and hooks; registers the `hindsight` and
-   `obsidian` MCP servers (user scope); merges the session hooks into `~/.claude/settings.json`.
-   Re-running is always safe.
+3. `./apply.sh` — symlinks guidance, skills, agents, and hooks; registers the `hindsight` (HTTP)
+   and `obsidian` (`mcpvault`, stdio) MCP servers (user scope); merges the session hooks into
+   `~/.claude/settings.json` and publishes the vault root there as `OBSIDIAN_VAULT_PATH`, which is
+   where agents write attachments. Re-running is always safe.
 4. Restart Claude Code sessions.
 
 ### Code graph (optional)

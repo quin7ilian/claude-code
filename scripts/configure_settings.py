@@ -4,7 +4,8 @@
 Manages the retention script under hooks.Stop and hooks.SessionEnd, the memory primer
 under hooks.SessionStart and hooks.SessionEnd, the instruction announcement and the code
 graph's watcher start under hooks.SessionStart, and the write gate under
-hooks.PreToolUse — plus the MAX_MCP_OUTPUT_TOKENS env default and the auto-memory switch.
+hooks.PreToolUse — plus the MAX_MCP_OUTPUT_TOKENS env default, the Obsidian vault path,
+and the auto-memory switch.
 
 Everything else in the settings file — foreign hooks, unknown keys, user tuning — is
 preserved byte-for-byte. Handlers left behind by retired tooling (cc-retain,
@@ -40,6 +41,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--graph-watch-script", required=True, type=Path)
     parser.add_argument("--env-file", required=True, type=Path)
     parser.add_argument("--state-dir", required=True, type=Path)
+    parser.add_argument("--obsidian-vault-path", type=Path, default=None)
     return parser.parse_args()
 
 
@@ -151,6 +153,7 @@ def merge_settings(
     gate_script: Path | None = None,
     graph_watch_cmd: str | None = None,
     graph_watch_script: Path | None = None,
+    obsidian_vault_path: Path | None = None,
 ) -> dict[str, Any]:
     hooks = document.setdefault("hooks", {})
     if not isinstance(hooks, dict):
@@ -218,6 +221,14 @@ def merge_settings(
     # Never clobber a user-tuned value; only supply the default when the key is absent.
     env.setdefault("MAX_MCP_OUTPUT_TOKENS", MAX_MCP_OUTPUT_TOKENS)
 
+    # The vault root, published so an agent can place attachments on disk without deriving the
+    # path. Unlike the token default this is assigned, not defaulted: it mirrors the vault the
+    # obsidian server was just registered against, and a stale value would send writes into a
+    # directory nothing is serving. Absent when the installer registered no vault, and then the
+    # existing key is left alone rather than removed — nothing else knows what it should be.
+    if obsidian_vault_path is not None:
+        env["OBSIDIAN_VAULT_PATH"] = str(obsidian_vault_path)
+
     # Hindsight is the only memory store: local auto memory (per-project MEMORY.md fact
     # files and the remember-flows that feed them) stays off. Enforced, not defaulted —
     # a hand-toggle here would silently fork memory into an unreconciled local store.
@@ -257,25 +268,30 @@ def write_settings(path: Path, document: dict[str, Any]) -> None:
 
 def main() -> int:
     args = parse_args()
+    # Absolute but never symlink-resolved: the interpreter is recorded exactly as given
+    # (the unversioned /usr/bin/python3), so it follows the OS across upgrades. Resolving
+    # it would pin the hooks to that day's minor version, which the next distribution
+    # release deletes — and a fail-open hook whose interpreter is gone fails silently.
+    python_path = args.python.absolute()
     command = hook_command(
-        args.python.resolve(),
+        python_path,
         args.script.absolute(),
         args.env_file.absolute(),
         args.state_dir.absolute(),
     )
     primer_cmd = primer_command(
-        args.python.resolve(),
+        python_path,
         args.primer_script.absolute(),
         args.env_file.absolute(),
     )
     instructions_cmd = " ".join(
         shlex.quote(argument)
-        for argument in (str(args.python.resolve()), str(args.instructions_script.absolute()))
+        for argument in (str(python_path), str(args.instructions_script.absolute()))
     )
     gate_cmd = " ".join(
         shlex.quote(argument)
         for argument in (
-            str(args.python.resolve()),
+            str(python_path),
             str(args.gate_script.absolute()),
             "--env-file",
             str(args.env_file.absolute()),
@@ -283,7 +299,7 @@ def main() -> int:
     )
     graph_watch_cmd = " ".join(
         shlex.quote(argument)
-        for argument in (str(args.python.resolve()), str(args.graph_watch_script.absolute()))
+        for argument in (str(python_path), str(args.graph_watch_script.absolute()))
     )
     try:
         document = load_settings(args.settings)
@@ -299,6 +315,9 @@ def main() -> int:
             args.gate_script.absolute(),
             graph_watch_cmd,
             args.graph_watch_script.absolute(),
+            args.obsidian_vault_path.absolute()
+            if args.obsidian_vault_path is not None
+            else None,
         )
         write_settings(args.settings, document)
     except ValueError as error:

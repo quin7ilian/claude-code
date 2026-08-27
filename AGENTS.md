@@ -26,11 +26,14 @@ vault; Codex is the only external model.
   Never pass model or effort flags — Codex inherits the user's own configuration. Point Codex at
   files by absolute path instead of pasting large artifacts; never at secret-bearing paths.
 - **Python** is OS-python3, pure stdlib — no venv, no third-party dependencies. Hooks are fail-open:
-  never block a turn, never print errors into a session, never log payloads or credentials.
+  on their own failure or uncertainty they do nothing — never an error into a session, never a
+  logged payload or credential. A hook blocks only as a defined policy gate (the instruction-read
+  gate) and only on a verdict it reached, never on a failure to reach one.
 - **One home per rule.** The tier vocabulary and its model/effort/review tables live in
-  `dot-claude/skills/implement/references/complexity-tiers.md`; the code-review contract lives in
-  `bin/codex-review`; behavioral policy lives in `dot-claude/CLAUDE.md`. Reference them; never fork
-  or restate them here.
+  `dot-claude/skills/implement/references/complexity-tiers.md`; the vault note standard and its two
+  templates live in `dot-claude/skills/design-spec/references/` (shared by `research-note`,
+  referenced by absolute installed path); the code-review contract lives in `bin/codex-review`; behavioral policy lives in
+  `dot-claude/CLAUDE.md`. Reference them; never fork or restate them here.
 - **Comments and docs describe current state only** — what a thing does, its contract, its
   constraints. No history, no provenance.
 - **No personal information in this repository.** No names, emails, locations, hardware
@@ -109,14 +112,35 @@ for ruling), and the orchestrator's holistic duties are a single system mirrored
 and `dot-claude/CLAUDE.md`. Relaxing one seat reopens the others — sweep them together or not at
 all.
 
+### Vault notes
+
+- **The note standard is enforced at prompt level, deliberately.** `vault-note-standard.md` and
+  its templates define the shape of a specification or research note; the templates carry each
+  section's contract as HTML comments, so the rules travel in the artifact and survive compaction;
+  the skills express every write as a named operation and run a self-check at each checkpoint.
+  There is no linter and no Stop gate: checking prose structure mechanically needs CommonMark
+  container semantics to avoid false positives, and a gate that can block a turn on a false
+  positive teaches the agent to ignore it. A mechanical check is added only after a real,
+  observed drift that prompt-level enforcement failed to prevent — and only after a detailed
+  design agreement, never from a one-line ask.
+- **The standard governs two document types and stops there.** Specifications and research notes
+  get the full shape; any other note type gets the frontmatter and tag contract only. A standard
+  that tries to cover every kind of note cannot stay legible or be followed.
+
 ### Installation and repository instructions
 
 - **`apply.sh` refuses foreign paths.** It replaces only symlinks it owns (targets inside this repo)
   and prunes only dangling repo-owned links, so a personal file can never be clobbered by an
   install. Re-running must change nothing.
 - **The settings.json merge is surgical.** Repo-owned entries are matched by script path; foreign
-  hooks are preserved byte-for-byte; `MAX_MCP_OUTPUT_TOKENS` is added only when absent (large
-  recalls need headroom); an unchanged merge rewrites nothing.
+  hooks are preserved byte-for-byte; an unchanged merge rewrites nothing. The interpreter recorded
+  in every hook command is absolute but never symlink-resolved, so it follows the OS instead of
+  pinning the minor version an upgrade then deletes. The two managed `env` keys differ
+  deliberately: `MAX_MCP_OUTPUT_TOKENS` is added only when absent (large recalls need headroom, and
+  a tuned value is the user's), while `OBSIDIAN_VAULT_PATH` is assigned, because it must mirror the
+  vault the `obsidian` server was just registered against — a stale value sends attachment writes
+  into a directory nothing serves. It is written only when that registration succeeded, and an
+  absent registration leaves any existing value alone rather than removing it.
 - **Adherence is gated, not requested.** Claude Code does not auto-load `AGENTS.md`, and rules that
   merely sit in context get skimmed while rules an agent reads get followed. So
   `scripts/inject_repo_instructions.py` (SessionStart) prints a pointer — path, section headings,

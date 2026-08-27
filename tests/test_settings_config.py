@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -26,6 +27,7 @@ GATE = Path("/home/user/.claude/hooks/gate_repo_instructions.py")
 GATE_CMD = f"/usr/bin/python3 {GATE}"
 GRAPH_WATCH = Path("/home/user/.claude/hooks/start_graph_watch.py")
 GRAPH_WATCH_CMD = f"/usr/bin/python3 {GRAPH_WATCH}"
+CONFIGURE_SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "configure_settings.py"
 
 
 def owned_command() -> str:
@@ -278,6 +280,72 @@ class SettingsConfigTests(unittest.TestCase):
             self.assertEqual(settings_path.read_bytes(), first)
             self.assertEqual(settings_path.stat().st_mtime_ns, first_mtime)
             self.assertEqual(settings_path.stat().st_mode & 0o777, 0o600)
+
+    def test_interpreter_is_recorded_without_resolving_symlinks(self) -> None:
+        """Every hook command must carry the interpreter exactly as supplied. Resolving
+        /usr/bin/python3 to its versioned target pins the hooks to one minor version, and
+        the next OS upgrade removes it — leaving fail-open hooks that silently do nothing."""
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            (root / "python3.99").write_text("#!/bin/sh\n", encoding="utf-8")
+            unversioned = root / "python3"
+            unversioned.symlink_to(root / "python3.99")
+            settings_path = root / "settings.json"
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(CONFIGURE_SCRIPT),
+                    "--settings", str(settings_path),
+                    "--python", str(unversioned),
+                    "--script", str(SCRIPT),
+                    "--primer-script", str(PRIMER),
+                    "--instructions-script", str(INSTRUCTIONS),
+                    "--gate-script", str(GATE),
+                    "--graph-watch-script", str(GRAPH_WATCH),
+                    "--env-file", "/home/user/.claude/.env",
+                    "--state-dir", "/home/user/.claude/hindsight-retention",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+
+            commands = [
+                handler["command"]
+                for groups in json.loads(settings_path.read_text(encoding="utf-8"))["hooks"].values()
+                for group in groups
+                for handler in group["hooks"]
+            ]
+            self.assertEqual(len(commands), 7)
+            for command in commands:
+                self.assertTrue(command.startswith(f"{unversioned} "), command)
+
+
+    def test_vault_path_is_assigned_and_tracks_the_registered_vault(self) -> None:
+        """The vault path mirrors the vault the obsidian server was registered against, so it
+        is assigned rather than defaulted: a stale value would send attachment writes into a
+        directory nothing serves. MAX_MCP_OUTPUT_TOKENS keeps its never-clobber semantics."""
+        document: dict = {"env": {"OBSIDIAN_VAULT_PATH": "/old/vault", "MAX_MCP_OUTPUT_TOKENS": "9"}}
+        merge_settings(
+            document,
+            owned_command(),
+            SCRIPT,
+            obsidian_vault_path=Path("/new/vault"),
+        )
+        self.assertEqual(document["env"]["OBSIDIAN_VAULT_PATH"], "/new/vault")
+        self.assertEqual(document["env"]["MAX_MCP_OUTPUT_TOKENS"], "9")
+
+    def test_vault_path_is_left_alone_when_no_vault_was_registered(self) -> None:
+        """A skipped registration must not remove a path the installer simply could not confirm
+        this run — nothing else in the merge knows what it should be."""
+        document: dict = {"env": {"OBSIDIAN_VAULT_PATH": "/existing/vault"}}
+        merge_settings(document, owned_command(), SCRIPT)
+        self.assertEqual(document["env"]["OBSIDIAN_VAULT_PATH"], "/existing/vault")
+
+        fresh: dict = {}
+        merge_settings(fresh, owned_command(), SCRIPT)
+        self.assertNotIn("OBSIDIAN_VAULT_PATH", fresh["env"])
 
 
 if __name__ == "__main__":

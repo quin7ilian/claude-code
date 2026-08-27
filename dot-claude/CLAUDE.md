@@ -48,8 +48,10 @@ retrieval is genuinely required; `MAX_MCP_OUTPUT_TOKENS` is raised in settings t
 ## Research and design knowledge — use Obsidian
 
 The configured **Obsidian** vault is the canonical backend for research notes, prior investigations,
-design notes, and implementation specifications. Treat vault retrieval as another normal context
-source:
+design notes, and implementation specifications. The `obsidian` MCP server is a local `mcpvault`
+process serving the vault directory over stdio — no daemon, no credential, and it is unavailable
+only when the registration itself is missing. Its vault root is in `$OBSIDIAN_VAULT_PATH`; never
+derive that path by searching. Treat vault retrieval as another normal context source:
 
 1. At the start of each prompt, check whether existing research notes could materially improve the
    answer, plan, investigation, or search strategy. If so, use the `obsidian` MCP server before
@@ -60,24 +62,23 @@ source:
    whole vault into context.
 
 When a task explicitly calls for creating or materially updating a durable research or design
-artifact:
-
-1. Search for an existing note before creating one; update or link rather than duplicate.
-2. Establish the canonical note near the start of the workflow and treat it as write-through working
-   context. Update it after each material finding, user decision, rejected option, or resolved
-   question; re-read it as work continues and after compaction. Never leave the transcript as the
-   only copy until an end-of-session dump.
-3. Store research under `Research/` and design or implementation specifications under `Design/`.
-4. Store newly captured research media under `Research/attachments/` and newly created design media
-   under `Design/attachments/`, using the vault's established relative embeds. Keep source media in
-   Research when a Design note embeds it; do not duplicate it merely to colocate it.
-5. Tag every created or materially updated note through its YAML `tags` property. Inspect existing
-   tag values first and reuse the established `type/*`, `topic/*`, and, where relevant, `strategy/*`
-   and `platform/*` namespaces. Assign one primary `type/*`; avoid synonyms and use lowercase
-   kebab-case only when a genuinely new tag is needed.
-6. Keep research and design as distinct, user-controlled workflows. Research may accumulate without a
-   design destination. A Design note may consume selected Research notes, preserve their relevant
-   subject tags, and link them explicitly, but never start the design workflow automatically.
+artifact, it runs through `/research-note` or `/design-spec`, and the note follows
+`~/.claude/skills/design-spec/references/vault-note-standard.md` — the single home for the
+note's shape: a closed section set with the body holding current state only, history as
+decision-log rows the body references by id, a status block that is the note's whole state,
+and the tag contract (frontmatter only; one primary `type/*`; established `topic/*`,
+`strategy/*`, `platform/*` values; a new value only after the user's ruling). Enforcement is
+prompt-level: the templates carry each section's contract as comments, the skills' checkpoint
+operation runs the standard's self-check, and every update is a section replacement or a
+whole-file write, never an append. Research under `Research/`, specifications under `Design/`.
+Notes are written through the server, but **attachments are written to disk**: no mcpvault tool
+creates a binary file, so media is placed with the ordinary file tools under
+`$OBSIDIAN_VAULT_PATH/Research/attachments/` or `$OBSIDIAN_VAULT_PATH/Design/attachments/` —
+creating that directory if absent — and the note embeds it by its vault-relative
+`attachments/...` path. Search for an existing note before creating one; establish it at
+the start of the workflow and write through it, never dumping the transcript at the end.
+Research may accumulate without a design destination; a Design note consumes Research notes
+by explicit wikilink, and neither workflow starts the other automatically.
 
 Use Hindsight for durable personal and project history; use Obsidian for research notes and prior
 investigations, designs, and specifications. A task may warrant both. Notes are leads and historical

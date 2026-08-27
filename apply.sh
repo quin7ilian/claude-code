@@ -9,7 +9,8 @@
 #   - claude (Claude Code) installed and logged in
 #   - the OS python3 (all scripts are pure stdlib — no venv, no extra deps)
 #   - HINDSIGHT_API_URL / HINDSIGHT_API_KEY / HINDSIGHT_BANK_ID in ~/.claude/.env (see .env.example)
-#   - OBSIDIAN_MCP_URL / OBSIDIAN_API_KEY in ~/.claude/.env for the vault workflows
+#   - OBSIDIAN_VAULT_PATH (and optionally OBSIDIAN_MCPVAULT_BIN) in ~/.claude/.env for the
+#     vault workflows, plus mcpvault installed and a node >= 20 on PATH
 #   - codex logged in via ChatGPT (codex login status) — for the review gate and codex skills
 set -euo pipefail
 
@@ -125,14 +126,28 @@ else
   fi
 fi
 
-echo "Configuring Obsidian MCP"
-if [ -z "${OBSIDIAN_MCP_URL:-}" ] || [ -z "${OBSIDIAN_API_KEY:-}" ]; then
-  echo "  SKIP: OBSIDIAN_MCP_URL / OBSIDIAN_API_KEY not set (see $CC_ENV, .env.example). Then re-run."
+echo "Configuring Obsidian MCP (headless mcpvault over stdio)"
+# The .env file is parsed, not sourced, so a leading ~/ in the recorded path never reached a
+# shell to be expanded. Expand it here; anything else is taken literally.
+case "${OBSIDIAN_VAULT_PATH:-}" in "~/"*) OBSIDIAN_VAULT_PATH="$HOME/${OBSIDIAN_VAULT_PATH#\~/}" ;; esac
+OBSIDIAN_MCPVAULT_BIN="${OBSIDIAN_MCPVAULT_BIN:-/opt/mcpvault/bin/mcpvault}"
+# Set only once the server is registered, so a skipped registration never publishes a vault
+# path that agents would then be told to write attachments into.
+VAULT_FOR_SETTINGS=""
+if [ -z "${OBSIDIAN_VAULT_PATH:-}" ]; then
+  echo "  SKIP: OBSIDIAN_VAULT_PATH not set (see $CC_ENV, .env.example). Then re-run."
+elif [ ! -d "$OBSIDIAN_VAULT_PATH" ]; then
+  echo "  SKIP: OBSIDIAN_VAULT_PATH is not a directory: $OBSIDIAN_VAULT_PATH" >&2
+elif [ ! -x "$OBSIDIAN_MCPVAULT_BIN" ]; then
+  echo "  SKIP: mcpvault is not executable at $OBSIDIAN_MCPVAULT_BIN — install it or set OBSIDIAN_MCPVAULT_BIN." >&2
 else
+  # stdio: mcpvault is spawned per session and reads the vault directory directly. Its shebang
+  # resolves node from PATH, which keeps the registration free of a version-pinned interpreter.
   claude mcp remove --scope user obsidian >/dev/null 2>&1 || true
-  if claude mcp add --scope user --transport http obsidian "$OBSIDIAN_MCP_URL" \
-       --header "Authorization: Bearer $OBSIDIAN_API_KEY" >/dev/null 2>&1; then
-    echo "  registered obsidian (user scope) -> $OBSIDIAN_MCP_URL"
+  if claude mcp add --scope user obsidian -- \
+       "$OBSIDIAN_MCPVAULT_BIN" "$OBSIDIAN_VAULT_PATH" >/dev/null 2>&1; then
+    echo "  registered obsidian (user scope) -> $OBSIDIAN_MCPVAULT_BIN, vault: $OBSIDIAN_VAULT_PATH"
+    VAULT_FOR_SETTINGS="$OBSIDIAN_VAULT_PATH"
   else
     echo "  WARN: 'claude mcp add' failed for obsidian — check 'claude mcp list'." >&2
   fi
@@ -146,7 +161,14 @@ link_owned_path "$REPO/scripts/inject_repo_instructions.py" \
 link_owned_path "$REPO/scripts/gate_repo_instructions.py" \
   "$CLAUDE_HOME/hooks/gate_repo_instructions.py"
 link_owned_path "$REPO/scripts/start_graph_watch.py" "$CLAUDE_HOME/hooks/start_graph_watch.py"
+# The vault path is published into settings.json's env block only when the server was
+# registered above, so agents read a path that is actually being served.
+SETTINGS_EXTRA=()
+if [ -n "$VAULT_FOR_SETTINGS" ]; then
+  SETTINGS_EXTRA=(--obsidian-vault-path "$VAULT_FOR_SETTINGS")
+fi
 python3 "$REPO/scripts/configure_settings.py" \
+  ${SETTINGS_EXTRA[@]+"${SETTINGS_EXTRA[@]}"} \
   --settings "$CLAUDE_HOME/settings.json" \
   --python "$(command -v python3)" \
   --script "$CLAUDE_HOME/hooks/retain_hindsight.py" \
