@@ -92,6 +92,24 @@ silently substitute another storage location.
 Use the native WebSearch and WebFetch tools for current external facts. Open primary or
 authoritative sources before relying on them, and state what could not be verified.
 
+## Deliverables to the user — the message, an Artifact, or a saved file
+
+The chat message is the only surface that renders on every client; a sent file card is not —
+markdown shows raw or not at all in the IDE and on mobile. Route by what the user does with it:
+
+- **Content the user reads now** — findings, verdicts, decisions, summaries — is in the message, in
+  your own words.
+- **Content from another source** — a Codex review, dossier, or brainstorm; a tearsheet; an
+  external report — is published as its own private Artifact, titled by source ("Codex review —
+  <change>"), and the message carries only the pointer: the source, a one-line verdict or summary,
+  the link, and the file's path for a desktop or IDE reader. Never reproduce the body in chat,
+  where it reads as your own words and floods the scrollback, and never make a file card its sole
+  carrier. Verbatim third-party text is published as the `.md` file itself — the platform renders
+  it, the words stay the author's, and nothing is spent restyling; images and self-contained HTML
+  are published as HTML with assets inlined as data URIs.
+- **Files the user will save or use elsewhere** — code, scripts, data — go through `SendUserFile`,
+  always with a real extension. It is never a reading surface.
+
 ## Code navigation — the graph first, the tree second
 
 A repository that carries `.code-review-graph/graph.db` has an opt-in code graph, queried with the

@@ -4,8 +4,8 @@
 Manages the retention script under hooks.Stop and hooks.SessionEnd, the memory primer
 under hooks.SessionStart and hooks.SessionEnd, the instruction announcement and the code
 graph's watcher start under hooks.SessionStart, and the write gate under
-hooks.PreToolUse — plus the MAX_MCP_OUTPUT_TOKENS env default, the Obsidian vault path,
-and the auto-memory switch.
+hooks.PreToolUse — plus the MAX_MCP_OUTPUT_TOKENS and CLAUDE_CODE_ARTIFACT_AUTO_OPEN env
+defaults, the Obsidian vault path, and the auto-memory switch.
 
 Everything else in the settings file — foreign hooks, unknown keys, user tuning — is
 preserved byte-for-byte. Handlers left behind by retired tooling (cc-retain,
@@ -26,6 +26,7 @@ from typing import Any
 
 
 MAX_MCP_OUTPUT_TOKENS = "50000"
+ARTIFACT_AUTO_OPEN = "0"
 LEGACY_COMMAND_BASENAMES = ("cc-retain", "cc-reconcile-nudge")
 LEGACY_EVENTS = ("Stop", "SessionEnd", "SessionStart")
 
@@ -220,6 +221,9 @@ def merge_settings(
         raise ValueError("settings.json field 'env' must be an object")
     # Never clobber a user-tuned value; only supply the default when the key is absent.
     env.setdefault("MAX_MCP_OUTPUT_TOKENS", MAX_MCP_OUTPUT_TOKENS)
+    # Artifacts are the delivery surface for third-party content (Codex reviews, tearsheets),
+    # so a publish must not pop a browser or an IDE prompt every time; the user opens the link.
+    env.setdefault("CLAUDE_CODE_ARTIFACT_AUTO_OPEN", ARTIFACT_AUTO_OPEN)
 
     # The vault root, published so an agent can place attachments on disk without deriving the
     # path. Unlike the token default this is assigned, not defaulted: it mirrors the vault the

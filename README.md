@@ -210,8 +210,10 @@ Requires `claude` logged in, OS `python3` (3.10+), and the `codex` CLI logged in
    own.
 3. `./apply.sh` — symlinks guidance, skills, agents, and hooks; registers the `hindsight` (HTTP)
    and `obsidian` (`mcpvault`, stdio) MCP servers (user scope); merges the session hooks into
-   `~/.claude/settings.json` and publishes the vault root there as `OBSIDIAN_VAULT_PATH`, which is
-   where agents write attachments. Re-running is always safe.
+   `~/.claude/settings.json`, publishes the vault root there as `OBSIDIAN_VAULT_PATH`, which is
+   where agents write attachments, and defaults `CLAUDE_CODE_ARTIFACT_AUTO_OPEN=0` so Artifacts
+   (the delivery surface for Codex reviews and other third-party content) publish without
+   opening a browser. Re-running is always safe.
 4. Restart Claude Code sessions.
 
 ### Code graph (optional)

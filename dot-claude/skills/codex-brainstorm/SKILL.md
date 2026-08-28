@@ -93,6 +93,8 @@ unauthenticated, or fails, state that briefly and perform the full divergence pa
 7. Converge only when the user asks for a recommendation; preserve the broader map even when
    presenting a shortlist.
 
-Give the user the raw Codex brainstorm path and the complete integrated option map. Include a
-refined shortlist only when useful or requested, and state what was merged or discarded and why.
+Publish the raw Codex brainstorm as a private Artifact — the `.md` file itself, unedited, titled as
+a Codex brainstorm on the problem — and give the user its link and path with the complete
+integrated option map; the brainstorm body stays out of the message. Include a refined shortlist
+only when useful or requested, and state what was merged or discarded and why.
 Present all ideas as candidates until evidence or testing supports them.

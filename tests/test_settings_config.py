@@ -151,11 +151,15 @@ class SettingsConfigTests(unittest.TestCase):
     def test_env_default_is_added_only_when_absent(self) -> None:
         fresh = merge_settings({}, owned_command(), SCRIPT)
         self.assertEqual(fresh["env"]["MAX_MCP_OUTPUT_TOKENS"], "50000")
+        self.assertEqual(fresh["env"]["CLAUDE_CODE_ARTIFACT_AUTO_OPEN"], "0")
 
         tuned = merge_settings(
-            {"env": {"MAX_MCP_OUTPUT_TOKENS": "90000"}}, owned_command(), SCRIPT
+            {"env": {"MAX_MCP_OUTPUT_TOKENS": "90000", "CLAUDE_CODE_ARTIFACT_AUTO_OPEN": "1"}},
+            owned_command(),
+            SCRIPT,
         )
         self.assertEqual(tuned["env"]["MAX_MCP_OUTPUT_TOKENS"], "90000")
+        self.assertEqual(tuned["env"]["CLAUDE_CODE_ARTIFACT_AUTO_OPEN"], "1")
 
     def test_auto_memory_is_forced_off(self) -> None:
         fresh = merge_settings({}, owned_command(), SCRIPT)

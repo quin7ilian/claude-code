@@ -135,12 +135,14 @@ all.
 - **The settings.json merge is surgical.** Repo-owned entries are matched by script path; foreign
   hooks are preserved byte-for-byte; an unchanged merge rewrites nothing. The interpreter recorded
   in every hook command is absolute but never symlink-resolved, so it follows the OS instead of
-  pinning the minor version an upgrade then deletes. The two managed `env` keys differ
-  deliberately: `MAX_MCP_OUTPUT_TOKENS` is added only when absent (large recalls need headroom, and
-  a tuned value is the user's), while `OBSIDIAN_VAULT_PATH` is assigned, because it must mirror the
-  vault the `obsidian` server was just registered against — a stale value sends attachment writes
-  into a directory nothing serves. It is written only when that registration succeeded, and an
-  absent registration leaves any existing value alone rather than removing it.
+  pinning the minor version an upgrade then deletes. The managed `env` keys differ
+  deliberately: `MAX_MCP_OUTPUT_TOKENS` and `CLAUDE_CODE_ARTIFACT_AUTO_OPEN` are added only when
+  absent (large recalls need headroom; a publish must not pop a browser for every Codex review
+  delivered as an Artifact; a tuned value is the user's), while `OBSIDIAN_VAULT_PATH` is assigned,
+  because it must mirror the vault the `obsidian` server was just registered against — a stale
+  value sends attachment writes into a directory nothing serves. It is written only when that
+  registration succeeded, and an absent registration leaves any existing value alone rather than
+  removing it.
 - **Adherence is gated, not requested.** Claude Code does not auto-load `AGENTS.md`, and rules that
   merely sit in context get skimmed while rules an agent reads get followed. So
   `scripts/inject_repo_instructions.py` (SessionStart) prints a pointer — path, section headings,

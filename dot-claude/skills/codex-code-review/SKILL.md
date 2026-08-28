@@ -76,5 +76,7 @@ Read the raw review exactly once. For every finding:
    occurs, when it does not, and its observable effect, in plain terms rather than the reviewer's
    shorthand. Do not silently drop or soften findings.
 
-Give the user the raw review file path, the paired assessment, the final verdict, and verified test
-results. Keep unverified concerns clearly labeled.
+Publish the raw review as a private Artifact — the `.md` file itself, unedited, titled as a Codex
+review of this change — and give the user its link and path, the paired assessment, the final
+verdict, and verified test results. The review body stays out of the message: it is Codex's text,
+not yours. Keep unverified concerns clearly labeled.

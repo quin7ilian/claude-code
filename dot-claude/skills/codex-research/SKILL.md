@@ -100,7 +100,8 @@ your own research.
    verified findings from useful but still unverified leads.
 6. Preserve genuine disagreement or uncertainty instead of forcing consensus.
 
-Give the user the raw Codex dossier path and a complete integrated research answer at the depth the
-question warrants. Incorporate verified Codex findings into the broader investigation, include
+Publish the raw Codex dossier as a private Artifact — the `.md` file itself, unedited, titled as a
+Codex dossier on the question — and give the user its link and path alongside a complete integrated
+research answer at the depth the question warrants; the dossier body stays out of the message. Incorporate verified Codex findings into the broader investigation, include
 material corrections and disagreements, and retain useful detail rather than collapsing the work
 into quick notes. Cite the sources you independently opened, not merely the dossier.

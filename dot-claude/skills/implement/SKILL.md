@@ -236,6 +236,9 @@ Long runs cross usage-limit windows; treat interruption as normal, not exception
   items land.
 - **The final report**: per-item summaries with their review status, the batch review
   verdict, rejected findings worth the user's attention, test results, and residual
-  risks. Report coder summaries faithfully — do not soften flagged items — and present
-  every finding that reaches the user with its concrete scenario: when it occurs, when
-  it does not, and its effect, in plain terms rather than the reviewer's shorthand.
+  risks. Publish each batch review's raw `.md` as a private Artifact, unedited, and link
+  it from the report; list the per-item review files the coders returned by path and
+  publish any the user asks for. Report coder summaries faithfully — do not soften
+  flagged items — and present every finding that reaches the user with its concrete
+  scenario: when it occurs, when it does not, and its effect, in plain terms rather
+  than the reviewer's shorthand.

@@ -128,5 +128,7 @@ ruling — never directly from the review, however sound a finding looks.
 5. Recheck the revised plan for requirement coverage and internal consistency yourself; do not rerun
    Codex unless the user explicitly requests it.
 
-Give the user the raw Codex report path, the finding-by-finding assessment above, the amendments
-made or awaiting ruling, verified sources, and the final readiness verdict.
+Publish the raw Codex report as a private Artifact — the `.md` file itself, unedited, titled as a
+Codex plan review of this plan — and give the user its link and path, the finding-by-finding
+assessment above, the amendments made or awaiting ruling, verified sources, and the final readiness
+verdict. The report body stays out of the message: it is Codex's text, not yours.

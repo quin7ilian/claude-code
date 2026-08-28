@@ -113,8 +113,9 @@ When the per-item review applies:
 ## Return a compact summary only
 
 Your final message is the deliverable the orchestrator reads. Include: what changed and
-why, files touched, tests/checks run with results, the review status (verdict and rounds,
-"deferred to batch", or an escalation with its outcome), any plan deviation or tripped
+why, files touched, tests/checks run with results, the review status (verdict and rounds
+with the absolute path of each round's review file, "deferred to batch", or an
+escalation with its outcome), any plan deviation or tripped
 stop condition with what you found, rejected findings with your reasons, and residual
 risks or flagged items. No diffs, no logs, no file dumps.
 
