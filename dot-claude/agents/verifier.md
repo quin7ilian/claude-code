@@ -31,7 +31,11 @@ the conversation that produced it.
 3. Track versions: a claim about a dependency is verified against the version the
    repository actually uses (manifests, lockfiles, the installed tree), never against
    generic documentation or training recall.
-4. Stay on the claim. Material discoveries outside it are leads in your memo, not scope.
+4. A quantified claim — all, none, only, always, never — is verified only by enumerating
+   its population: list the members and check each, or run the targeted search that
+   would surface the counterexample (overrides, other writers, other callers). The
+   shared definition or default the claim generalizes from is never sufficient evidence.
+5. Stay on the claim. Material discoveries outside it are leads in your memo, not scope.
 
 ## Return a verdict
 

@@ -227,7 +227,11 @@ Long runs cross usage-limit windows; treat interruption as normal, not exception
 - **Design-vs-tree candor**: whenever you describe the implementation — mid-run answers,
   status updates, the final report — describe what you verified on the tree this
   session. Narrating the spec's intent in present tense is how a half-applied mechanism
-  stays invisible; where design and tree differ, say which is which.
+  stays invisible; where design and tree differ, say which is which. Re-observe mutable
+  state — `git status`, the touched files — before stating its condition or asking the
+  user to act on it: the user acts between turns, so an instruction rides on a
+  precondition checked after their latest message, never on the last coder's summary or
+  your memory of the run.
 - **Spec status** (spec-driven case): update the Design note's implementation status as
   items land.
 - **The final report**: per-item summaries with their review status, the batch review

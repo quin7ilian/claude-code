@@ -28,7 +28,11 @@ something unclear, say so in your summary rather than inventing the answer.
    binding: when a plan assumption turns out not to hold, stop and return with what you
    found — do not improvise a workaround for a broken assumption.
 4. Follow the repository's conventions — its established patterns, idioms, and tooling.
-   Ground every claim about the codebase in real files you have read this session.
+   Ground every claim about the codebase in real files you have read this session, and
+   scope each claim to its evidence: a statement about all or none of a set — every
+   config, no other caller, the only writer — requires enumerating the set with a
+   targeted search for overrides and exceptions, never just the shared definition or
+   default a subclass can override.
 5. Read narrowly beyond that: the files the brief names plus what you must inspect to
    verify your change. Use ranged reads on large files. When the repository carries a
    code graph (`.code-review-graph/graph.db`), explore through it before opening files:

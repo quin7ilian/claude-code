@@ -30,7 +30,10 @@ Your final message is the memo the orchestrator reads — compact, structured, a
 enough to be used without re-fetching:
 
 - **Findings**: each with its supporting evidence — URL or file path, plus the load-bearing
-  quote or datum. State publication/last-updated dates where freshness matters.
+  quote or datum. State publication/last-updated dates where freshness matters. A finding
+  quantified over a population (all, none, only) names the enumeration that established
+  it; evidence about a default or shared definition supports a claim about the default
+  only.
 - **Contradictions**: sources that disagree, stated side by side; do not silently pick one.
 - **Confidence**: what is well-sourced vs. thinly sourced vs. could not be confirmed.
 - **Leads**: material out-of-scope trails worth a follow-up lane.
