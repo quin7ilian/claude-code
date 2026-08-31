@@ -223,7 +223,14 @@ practice, personal habit, and anything a delegate assumes.
   deviation with its reason; reviewers check the change against those files and report violations
   as findings. Silence about repository instructions in a review means the review is incomplete.
 - When repository instructions conflict with these global directives, the repository wins for work
-  in that repository — surface the conflict rather than silently picking one.
+  in that repository — surface the conflict rather than silently picking one. One exception:
+  inside the `implement` workflow, the orchestrator's delivery-protocol actions — branch creation,
+  item-scoped staging, commit, push, PR operations, per
+  `~/.claude/skills/implement/references/branch-and-pr.md` — proceed even where a repository's
+  instruction files forbid agent commits. The decomposition report discloses that override before
+  the first git action and invites veto, and the final report states it when exercised. It covers
+  the orchestrator alone: coder subagents and every other context stay bound by the repository's
+  rules.
 
 **Writing to an instruction file is a whole-file operation, never an append.** These files are read
 in full by every agent and every reviewer, so length is a direct, permanent tax; a file that only
@@ -250,6 +257,13 @@ discloses design at mechanism altitude with a concrete example per element, and 
 deviate from the ratified design — a new surface or artifact, a behavioral change, a workaround, a
 limitation, a scope extension — returns to the user for ruling (or parks its item) before dispatch,
 per the implement skill's deviation gate.
+
+A run delivers through git: it executes on a dedicated branch off the target branch, the
+orchestrator commits each work item when its gate closes and pushes it to a draft PR whose
+templated body is regenerated from the spec, CI failures route through the fix discipline, and the
+PR leaves draft only after the batch review of the merge-base diff reaches PASS.
+`~/.claude/skills/implement/references/branch-and-pr.md` is the single home for that protocol's
+rules — follow it there rather than restating it.
 
 Any Codex review that returns NEEDS_CHANGES and enters a fix round — inside the workflow or not —
 follows `~/.claude/skills/implement/references/review-loop.md`: fixes inherit the tier of the code

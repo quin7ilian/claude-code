@@ -102,8 +102,9 @@ vault; Codex is the only external model.
 ### Implementation workflow
 
 The workflow's rules and their rationale live in the artifacts themselves — the skills, the coder
-and verifier contracts, `references/complexity-tiers.md`, `bin/codex-review` — and are not restated
-here; if a rule is unclear from reading its artifact, fix the artifact. The one fact that spans
+and verifier contracts, `references/complexity-tiers.md`, `references/branch-and-pr.md`,
+`bin/codex-review` — and are not restated here; if a rule is unclear from reading its artifact, fix
+the artifact. The one fact that spans
 them: finding discipline (named contracts, concrete failure scenarios, no dead surface), premise
 discipline (evidence attached or a recorded blocker, never assumed-by-choice), disclosure
 discipline (sign-off covers only its disclosed text; deviations from the ratified design return
@@ -135,10 +136,11 @@ all.
 - **The settings.json merge is surgical.** Repo-owned entries are matched by script path; foreign
   hooks are preserved byte-for-byte; an unchanged merge rewrites nothing. The interpreter recorded
   in every hook command is absolute but never symlink-resolved, so it follows the OS instead of
-  pinning the minor version an upgrade then deletes. The managed `env` keys differ
-  deliberately: `MAX_MCP_OUTPUT_TOKENS` and `CLAUDE_CODE_ARTIFACT_AUTO_OPEN` are added only when
-  absent (large recalls need headroom; a publish must not pop a browser for every Codex review
-  delivered as an Artifact; a tuned value is the user's), while `OBSIDIAN_VAULT_PATH` is assigned,
+  pinning the minor version an upgrade then deletes. The managed keys differ deliberately: the
+  `env` keys `MAX_MCP_OUTPUT_TOKENS` and `CLAUDE_CODE_ARTIFACT_AUTO_OPEN`, plus the top-level
+  `attribution` key, are added only when absent (large recalls need headroom; a publish must not
+  pop a browser for every Codex review delivered as an Artifact; the installed default removes
+  commit/PR attribution; a tuned value is the user's), while `OBSIDIAN_VAULT_PATH` is assigned,
   because it must mirror the vault the `obsidian` server was just registered against — a stale
   value sends attachment writes into a directory nothing serves. It is written only when that
   registration succeeded, and an absent registration leaves any existing value alone rather than

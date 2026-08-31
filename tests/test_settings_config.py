@@ -161,6 +161,32 @@ class SettingsConfigTests(unittest.TestCase):
         self.assertEqual(tuned["env"]["MAX_MCP_OUTPUT_TOKENS"], "90000")
         self.assertEqual(tuned["env"]["CLAUDE_CODE_ARTIFACT_AUTO_OPEN"], "1")
 
+    def test_attribution_default_is_added_only_when_absent(self) -> None:
+        """No attribution in commits or pull requests under the installed default, but the
+        key is added whole and only when missing — a user who tuned any part of it keeps it."""
+        fresh = merge_settings({}, owned_command(), SCRIPT)
+        self.assertEqual(
+            fresh["attribution"], {"commit": "", "pr": "", "sessionUrl": False}
+        )
+
+        tuned = merge_settings(
+            {"attribution": {"pr": "custom"}}, owned_command(), SCRIPT
+        )
+        self.assertEqual(tuned["attribution"], {"pr": "custom"})
+
+    def test_attribution_session_url_serializes_as_json_false(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            settings_path = Path(temporary_directory) / "settings.json"
+            document = merge_settings({}, owned_command(), SCRIPT)
+            write_settings(settings_path, document)
+            rendered = settings_path.read_text(encoding="utf-8")
+
+            self.assertIn('"sessionUrl": false', rendered)
+            self.assertEqual(
+                json.loads(rendered)["attribution"],
+                {"commit": "", "pr": "", "sessionUrl": False},
+            )
+
     def test_auto_memory_is_forced_off(self) -> None:
         fresh = merge_settings({}, owned_command(), SCRIPT)
         self.assertIs(fresh["autoMemoryEnabled"], False)
@@ -260,6 +286,10 @@ class SettingsConfigTests(unittest.TestCase):
         ]
         for command in (owned_primer_command(), INSTRUCTIONS_CMD, GRAPH_WATCH_CMD):
             self.assertEqual(session_start.count(command), 1)
+
+        self.assertEqual(
+            document["attribution"], {"commit": "", "pr": "", "sessionUrl": False}
+        )
 
     def test_unreadable_or_non_object_settings_files_are_refused(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:

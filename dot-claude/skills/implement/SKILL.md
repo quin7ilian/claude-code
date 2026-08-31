@@ -25,6 +25,11 @@ before starting, under the same premise discipline a spec carries: name the load
 claims the decomposition rests on and each one's status — verified, or awaiting
 verification with its blocker named.
 
+Before the first dispatch, run the branch protocol's run-start step per
+`references/branch-and-pr.md`. The decomposition report names the run's branch before any
+git action, and where the repository's instruction files forbid agent commits it also
+discloses the override that file defines and invites the user's veto.
+
 ## Route each item
 
 Dispatch items **serially, in dependency order** via the Task tool, with the subagent
@@ -121,6 +126,9 @@ Read these in full with the Read tool before your first edit:
 They outrank general practice and anything this brief leaves unsaid. File writes are
 gated on having read them. State in your summary which you read and how the change
 complies, naming the specific rules it engages.
+
+Run no git write operations — no add, commit, branch, or stash; leave every change
+unstaged. The orchestrator commits accepted work per its protocol.
 ```
 
 Locate the files yourself before the first dispatch — they are not in a subagent's
@@ -152,6 +160,9 @@ verify findings, loop to PASS) before marking the item done. Fixes get no such
 exception: a review-round fix is dispatched to a fresh coder window, never authored
 inline from this session's accumulated context.
 
+When an item's gate closes, commit and push it per `references/branch-and-pr.md`; a CI
+defect there enters the ordinary fix discipline above.
+
 ## Review placement
 
 Review is placed per the policy in `references/complexity-tiers.md`: deterministic checks
@@ -172,7 +183,9 @@ the ratified design's load-bearing clauses against the integrated tree — targe
 searches and reads of the actual wiring, never memory of what the briefs asked for — and
 turn every nonconformance into a work item now. You are the only reviewer who saw the
 design; codex checks code against a brief, so each residual it happens to catch costs a
-full adjudicate-and-fix round, and each one it misses ships. Then:
+full adjudicate-and-fix round, and each one it misses ships. Any pre-review merge of the
+target branch, and the review's diff/range — the merge-base diff `git diff
+<target>...HEAD` — follow `references/branch-and-pr.md`. Then:
 
 1. Write a batch brief: the overall goal, the list of work items with their intent and
    acceptance criteria, spec references, the exact integrated diff/range, the absolute
@@ -199,7 +212,9 @@ full adjudicate-and-fix round, and each one it misses ships. Then:
    tree-wide — a delta-only re-review cannot see a fix that breaks a global invariant.
 4. Loop until PASS or return with unresolved findings explicitly flagged to the user.
    The moment a loop starts, run it per `references/review-loop.md` — living brief,
-   owner adjudications, unique output per round, circuit breaker.
+   owner adjudications, unique output per round, circuit breaker. On PASS, regenerate the
+   final PR body and take the PR out of draft per `references/branch-and-pr.md`; a loop
+   that ends with unresolved findings leaves the PR draft.
 
 ## Interruptions: resume, don't redo
 
@@ -215,6 +230,8 @@ Long runs cross usage-limit windows; treat interruption as normal, not exception
   the item's files). A stranded coder's work is usually still on disk — brief the resume
   against the existing diff ("verify and complete") instead of re-running the item from
   scratch.
+- A resume also reads the run's checkpoint — the branch log, the PR checklist, the pushed
+  head's CI state — per `references/branch-and-pr.md` before re-dispatching.
 
 ## What you keep
 
@@ -241,4 +258,6 @@ Long runs cross usage-limit windows; treat interruption as normal, not exception
   publish any the user asks for. Report coder summaries faithfully — do not soften
   flagged items — and present every finding that reaches the user with its concrete
   scenario: when it occurs, when it does not, and its effect, in plain terms rather
-  than the reviewer's shorthand.
+  than the reviewer's shorthand. It also carries the delivery protocol's record-keeping
+  per `references/branch-and-pr.md`: pushed head SHAs, the override when exercised,
+  degradation rungs skipped.
