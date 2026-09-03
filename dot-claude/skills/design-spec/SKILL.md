@@ -43,9 +43,10 @@ system in chat and write the specification when the discussion ends.
 1. Clarify the problem, stakeholders, goals, non-goals, constraints, approval boundaries,
    acceptance criteria, and required level of implementation detail. Ask only about choices
    that would materially change the design.
-2. Inspect the current repository, configuration, interfaces, tests, and applicable
-   repository guidance before making local-state claims; §3 Current state holds facts with
-   evidence, never design. Current artifacts override historical notes.
+2. Establish the current repository, configuration, interfaces, tests, and applicable
+   repository guidance before making local-state claims — a survey that size is a lane,
+   not your own reading; §3 Current state holds the facts it returns with their evidence,
+   never design. Current artifacts override historical notes.
 3. Retrieve only the Research notes relevant to the stated goal: start from notes the user
    names, then search narrowly by shared `topic/*`, `strategy/*`, and `platform/*` tags. Do
    not crawl the vault. Link what materially informed the design in §4 Research basis.
@@ -72,9 +73,10 @@ row; if it blocks the design, stop and let the user decide whether to start
   goes to §5, the alternatives and their rejection go to the `D-n` row, never to the body.
 - Every consequential decision rests on `P-n` rows. Never present a decision for
   ratification over silent or unlabeled premises, and never assert dependency runtime
-  behavior — threading, retries, lifecycle, failure modes — from recall. Verify cheap
-  premises before presenting; route deep ones to a `verifier` lane first, or present the
-  ruling as explicitly conditional on the named `P-n`. When in doubt whether a claim is
+  behavior — threading, retries, lifecycle, failure modes — from recall. A premise you
+  can settle within the delegation boundary's inline allowance you may settle yourself;
+  every other one routes to a `verifier` lane before presenting, or the ruling goes to
+  the user explicitly conditional on the named `P-n`. When in doubt whether a claim is
   load-bearing, it is.
 - Specify architecture, components, data flows, interfaces, state transitions, operational
   behavior, security and privacy boundaries, migration or rollout, observability, and
@@ -88,14 +90,16 @@ row; if it blocks the design, stop and let the user decide whether to start
   handoff step runs; the user may additionally request `/codex-plan-review` after
   completion.
 
-Use subagents selectively: independent read-heavy repository or web surveys go to
-`researcher` lanes (compact evidence memo), load-bearing premise checks go to `verifier`
-lanes (verdict with falsification-grade evidence), and bounded specialist critiques —
-security, performance, operations, testability — to whichever fits. Require compact
-findings with evidence paths, not raw output. Prohibit subagents from editing the
-canonical note or implementation. Keep coupled design reasoning, user decision points,
-conflict resolution, and all vault writes in the orchestrator. A returned verdict lands as
-**Verify a premise** before later reasoning depends on it.
+Delegation is not optional here. Under the delegation boundary in `~/.claude/CLAUDE.md`
+you keep coupled design reasoning, user decision points, conflict resolution, and every
+vault write; everything else is a lane. Repository and web surveys go to `researcher`;
+premise checks, command and probe runs, and bounded specialist critiques — security,
+performance, operations, testability — go to `verifier`. Pressure-testing your own
+candidate design is the case most often skipped and the one a lane most repays: send the
+design out to be attacked rather than arguing both sides of it yourself. Require compact
+findings with evidence paths, never raw output, and prohibit lanes from editing the
+canonical note or implementation. A returned verdict lands as **Verify a premise** before
+later reasoning depends on it.
 
 ## Tier the implementation sequence
 

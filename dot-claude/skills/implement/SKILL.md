@@ -58,13 +58,16 @@ The same discipline governs scope: a mid-run ruling — user steering, a review
 adjudication, a spec amendment — applies to the mechanism it governs, never to the site
 that surfaced it. A ruling you propose to the user rides on named premises with status —
 verified this session (yourself or via a `verifier` lane), or awaiting verification with
-its blocker named — never on recall stated as fact. Before folding one into a running item or a fix brief, enumerate its
-blast radius by searching the tree: every implementation site, test, doc, and
-instruction file the ruled mechanism touches, including the machinery the ruling
+its blocker named — never on recall stated as fact. Before folding one into a running
+item or a fix brief, establish its blast radius: every implementation site, test, doc,
+and instruction file the ruled mechanism touches, including the machinery the ruling
 obsoletes — a superseded mechanism left standing is a residual violation, not a harmless
-leftover. (In a repository carrying a code graph — `.code-review-graph/graph.db` — use
-`code-review-graph query callers_of`/`code-review-graph impact` to speed this
-enumeration; verify hits at the cited file:line rather than trusting them bare.) The brief carries that list so the item conforms the whole mechanism, not the
+leftover. Searching the tree for it is a `verifier` lane under the delegation boundary in
+`~/.claude/CLAUDE.md`, briefed to enumerate exhaustively and to verify hits at the cited
+file:line rather than trust them bare (in a repository carrying a code graph —
+`.code-review-graph/graph.db` — via `code-review-graph query callers_of`/`impact`); you
+own whether the returned list is complete. The brief carries that list so the item
+conforms the whole mechanism, not the
 one symptom; where the ruling is mechanically checkable, the item also lands a permanent
 guard (a test or a lint on the mechanism's shape) so conformance stops depending on
 anyone's sweep. A ruling applied only where it was noticed leaves the rest of the tree
@@ -179,11 +182,14 @@ applies to the batch review. Surface it to the user instead of proceeding as if 
 ## Batch review of the integrated change-set
 
 After all items have landed and the full test suite passes, sweep before you brief: walk
-the ratified design's load-bearing clauses against the integrated tree — targeted
-searches and reads of the actual wiring, never memory of what the briefs asked for — and
-turn every nonconformance into a work item now. You are the only reviewer who saw the
-design; codex checks code against a brief, so each residual it happens to catch costs a
-full adjudicate-and-fix round, and each one it misses ships. Any pre-review merge of the
+the ratified design's load-bearing clauses against the integrated tree, never against
+memory of what the briefs asked for, and turn every nonconformance into a work item now.
+The searches and reads that sweep is made of are lane work under the delegation boundary
+in `~/.claude/CLAUDE.md` — brief a `verifier` with the clauses to check and the sites to
+enumerate, then adjudicate what comes back; the clauses are yours because you are the
+only reviewer who saw the design, but finding where the tree answers them is not. Codex
+checks code against a brief, so each residual it happens to catch costs a full
+adjudicate-and-fix round, and each one it misses ships. Any pre-review merge of the
 target branch, and the review's diff/range — the merge-base diff `git diff
 <target>...HEAD` — follow `references/branch-and-pr.md`. Then:
 
@@ -202,10 +208,11 @@ target branch, and the review's diff/range — the merge-base diff `git diff
    the finding cites exists (the spec, the repository's instruction files, or the
    language and its libraries) and says what the finding claims: accurate mechanics on
    an invented premise is a rejected finding, not a smaller fix, and a finding grounded
-   only in the current use-case is contract invention. Then verify the mechanics, and
-   shape the fix yourself where the reviewer's shape is wrong — no fix may create dead
-   surface (a flag that only rejects, a parameter with no legal value, a branch nothing
-   can reach). Dispatch accepted findings back to coders as focused fix briefs. A fix
+   only in the current use-case is contract invention. Then verify the mechanics —
+   reproducing a finding is a `verifier` lane under the delegation boundary in
+   `~/.claude/CLAUDE.md`, and the verdict on what it returns is yours — and shape the fix
+   yourself where the reviewer's shape is wrong: no fix may create dead surface (a flag
+   that only rejects, a parameter with no legal value, a branch nothing can reach). Dispatch accepted findings back to coders as focused fix briefs. A fix
    inherits the tier of the code it touches, ships with a pinning test that ran red
    before the fix existed, and its authorship escalates per the ladder in
    `references/complexity-tiers.md`. Re-review the fix delta plus the invariant ledger
@@ -238,9 +245,11 @@ Long runs cross usage-limit windows; treat interruption as normal, not exception
 - **Sequencing and dependencies** between items; re-briefing when an earlier item's
   outcome changes a later item's inputs.
 - **Integration**: cross-item consistency, interfaces between deliverables, a full
-  test-suite run, the conformance sweep, and the batch review above. If integration
-  reveals a defect inside one item, send it back to a coder with a focused brief rather
-  than patching it inline.
+  test-suite run, the conformance sweep, and the batch review above. The suite run and
+  the sweep's legwork go to a `verifier` lane per the delegation boundary in
+  `~/.claude/CLAUDE.md`; judging what returns is yours. If integration reveals a defect
+  inside one item, send it back to a coder with a focused brief rather than patching it
+  inline.
 - **Design-vs-tree candor**: whenever you describe the implementation — mid-run answers,
   status updates, the final report — describe what you verified on the tree this
   session. Narrating the spec's intent in present tense is how a half-applied mechanism

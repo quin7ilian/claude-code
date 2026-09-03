@@ -72,14 +72,17 @@ investigation and write the note when it ends.
   under `Design/`, produce an implementation specification, or invoke `/design-spec`.
 - Never invoke a Codex skill. The user may request `/codex-research` separately.
 
-Delegate read-heavy retrieval — web sweeps, source fetching, corpus and repository skims —
-to `researcher` subagents whenever the fetching would otherwise flood this context, and run
-independent lanes in parallel when the questions allow it. Give each lane a bounded question
-and require a compact memo with findings, evidence, contradictions, unresolved gaps, and
-source links or paths; never raw logs or page content. Read the load-bearing sources
-yourself when a judgment depends on them. Keep source verification, contradiction
-resolution, synthesis, taxonomy, and all vault writes in the orchestrator. Integrate each
-verified contribution into the note before later work depends on it.
+Retrieval is lane work by default, not only when it would flood this context: under the
+delegation boundary in `~/.claude/CLAUDE.md`, web sweeps, source fetching, and corpus or
+repository skims go to `researcher` subagents, and empirical checks — running a probe,
+reproducing a reported result — go to `verifier`. Run independent lanes in parallel when
+the questions allow it. Give each lane a bounded question and require a compact memo with
+findings, evidence, contradictions, unresolved gaps, and source links or paths; never raw
+logs or page content. Where a judgment turns on a load-bearing source, have the lane
+return the passage and judge it yourself — retrieval delegates, judgment does not. Keep
+source verification, contradiction resolution, synthesis, taxonomy, and all vault writes
+in the orchestrator. Integrate each verified contribution into the note before later work
+depends on it.
 
 ## Maintain the vault artifact
 

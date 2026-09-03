@@ -28,13 +28,14 @@ round's findings are how the next round's findings get manufactured.
   workaround, a limitation — goes through the implement skill's deviation gate before
   dispatch: disclosed with its concrete example, ruled or parked. Only a fix restoring
   already-ratified behavior dispatches without a ruling.
-- **A mechanism-wide fix carries the orchestrator's own enumeration.** When a fix's
-  contract is "every site of X" — every read of a sentinel, every consumer of a rule,
-  every duplicate of a check — the orchestrator enumerates the sites itself before
-  dispatch (code graph, grep) and the brief carries the exhaustive list with a per-site
-  disposition the fix must return completed. A coder briefed with only the cited
-  instances fixes those instances, and the unswept remainder is the next round's
-  finding.
+- **A mechanism-wide fix carries an exhaustive enumeration.** When a fix's contract is
+  "every site of X" — every read of a sentinel, every consumer of a rule, every
+  duplicate of a check — the sites are enumerated before dispatch, and the brief carries
+  the exhaustive list with a per-site disposition the fix must return completed.
+  Producing that list is lane work — a `verifier` briefed to enumerate the population,
+  per the delegation boundary in `~/.claude/CLAUDE.md` — while owning its completeness
+  stays the orchestrator's. A coder briefed with only the cited instances fixes those
+  instances, and the unswept remainder is the next round's finding.
 
 ## The living brief
 

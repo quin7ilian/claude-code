@@ -242,6 +242,35 @@ decisions the code now enforces mechanically, history that no longer changes any
 and remove it in the same edit. A rule earns its place by changing what someone does, not by
 recording that something once happened.
 
+## Delegation — what an orchestrator keeps in its own hands
+
+Any workflow with an orchestrator — `implement`, `design-spec`, `research-note` — spends its
+session model on judgment, never on legwork. The orchestrator itself does five things: design
+reasoning and the decisions that follow from it, user interaction, writes to the artifact it
+owns, dispatching and adjudicating lanes, and the final report. Everything else is lane work by
+default — repository reconnaissance, web retrieval, running commands, tests, probes and
+benchmarks, premise checks, and adversarial pressure-testing of a candidate design.
+
+The boundary is decidable so it cannot be argued away: a question the orchestrator can settle in
+three tool calls or fewer with no command run may stay inline — opening a named file, checking
+`git status`, one targeted grep. Anything larger is a brief. The rule binds hardest exactly where
+delegating feels slower than doing it: sweeping the tree for every other site of a pattern,
+running a suite to see what breaks, reading a dependency's source to establish real behaviour.
+Those are lanes every time. Where a judgment needs a source read in full, the lane returns the
+passage and the orchestrator judges it — retrieval delegates, judgment does not.
+
+Route by lane: `verifier` for premise checks, command, test and probe runs, and adversarial
+critique — evidence and a verdict come back, never raw logs; `researcher` for read-heavy web,
+corpus, and repository retrieval — a compact evidence memo comes back. Lanes never edit the
+orchestrator's artifact, and a lane's summary is evidence of what it observed when it ran, not
+proof of current state.
+
+**Every spawn names its model, one way or the other.** The repo's own agents pin `model` and
+`effort` in their definitions, so `verifier`, `researcher`, `coder`, and `coder-complex` are safe
+to spawn bare. The built-in types — `general-purpose`, `Explore`, `Plan`, `claude` — pin nothing
+and inherit the session's model, so an expensive session silently spawns expensive agents. Prefer
+a repo agent; when a built-in is genuinely the right tool, pass an explicit `model`.
+
 ## Implementation delegation
 
 Substantial multi-item implementation goes through the `implement` skill: coder subagents do the
