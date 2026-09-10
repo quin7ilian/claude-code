@@ -74,7 +74,7 @@ rewritten in the same write as any change it summarises.
 | 8 | Implementation sequence | Table of `W-n` rows: item · tier · status · depends on · covers `R-n` · stop conditions. Tiers per `complexity-tiers.md`; status `todo` · `in-progress` · `done` · `blocked` · `dropped`. |
 | 9 | Premise register | Table of `P-n` rows: claim · state (`verified` · `awaiting verification` · `disproven`) · evidence, or what was tried, what blocks it, what unblocks it. |
 | 10 | Open questions | Table of `Q-n` rows: question · what it blocks · status (`open` · `answered → D-n`). |
-| 11 | Decision log | Table of `D-n` rows: date · decision · supersedes (`D-m` or —) · rationale and rejected alternatives in one or two lines. Append-only. |
+| 11 | Decision log | Table of `D-n` rows: date · who decided (`owner` · `orchestrator` · `orchestrator → D-m`) · the ask as it was put to the user · decision · supersedes (`D-m` or —) · rationale and rejected alternatives in one or two lines. Append-only. |
 | — | Appendix A… | Bulky evidence referenced from the body by anchor. Any number, lettered, each titled `Appendix X — ⟨title⟩`. |
 
 ### Section set — research note (`Research/`)
@@ -89,7 +89,7 @@ rewritten in the same write as any change it summarises.
 | 6 | Open questions | Table of `Q-n` rows: question · why it matters · status (`open` · `answered → D-n` or `answered → X-n`). |
 | 7 | Runbook | How to reproduce or resume: scripts, commands, data locations, parameters. One copy, always current. |
 | 8 | Experiment log | Table of `X-n` rows: date · what was run · result · which `F-n` it changed. Append-only. |
-| 9 | Decision log | Table of `D-n` rows: date · decision (scope correction, method change, tag introduction) · supersedes · rationale. Append-only. |
+| 9 | Decision log | Table of `D-n` rows: date · who decided (`owner` · `orchestrator` · `orchestrator → D-m`) · the ask as it was put to the user · decision (scope correction, method change, tag introduction) · supersedes · rationale. Append-only. |
 | — | Appendix A… | As for specifications. |
 
 ### Closed heading set
@@ -107,9 +107,40 @@ Registers assign ids in their own namespace — `R-n` requirements, `A-n` accept
 introductions (specification); `RQ-n`, `F-n`, `E-n`, `X-n`, `Q-n`, `D-n`, `T-n` (research).
 Ids are never reused or renumbered. The body references a register entry by id only; an id
 referenced anywhere must exist in its register. Where this standard lists the legal values of
-a register column — `W` status, `P` state, `Q` and `RQ` status, `F` confidence — a cell
-holding anything else is an error. Every `R-n` is covered by at least one `W-n`
+a register column — `W` status, `P` state, `Q` and `RQ` status, `F` confidence, `D` decided
+by — a cell holding anything else is an error. Every `R-n` is covered by at least one `W-n`
 and at least one `A-n`; every `W-n` names at least one `R-n`.
+
+### Authority, the ask, and the ruling
+
+A `D-n` row records who decided, what they were asked, and what was ruled. Not every decision
+in a log is the user's, and a log that cannot tell them apart reads as consent to all of them.
+
+`Decided by` holds one of three values. `owner` — the user ruled. `orchestrator` — the agent
+made the call on its own authority and it stands unratified. `orchestrator → D-m` — the agent
+made the call and the user ratified it later, in that named row. No row is written without
+one.
+
+`Asked` holds the ask as it was put to the user, in one line, verbatim in substance — the
+proposal they answered, never a summary composed afterward from the decision. An `owner` row
+always carries its ask; an `orchestrator` row carries `—`, because nothing was put to anyone.
+The exception is a row already in the log whose ask cannot be recovered: `owner` beside `—`
+means exactly that, and it is never legal on a row being written now. Together the cells make
+the log auditable — a reader sees at a glance which rulings are the user's and which the agent
+is still carrying alone, and compares proposal against outcome without reconstructing either.
+A row whose `Decision` reaches past its `Asked` is an error whose excess is not ratified.
+
+A ruling that contradicts, narrows, or overrides an earlier `D-m` names it in `Supersedes`, and
+that override is part of the ask that earned the ruling — never filled in from the agent's own
+reading after the user answered. An override noticed while writing is an unratified decision:
+the row does not land, and the override goes back as its own ask. Because the body carries
+current state only, these cells are the sole surviving record that a prior ruling was displaced
+at all.
+
+A specification reaches `ratified` on the user's word alone, and only when no row is
+`orchestrator` — an unratified row is a decision the design rests on that its owner has never
+seen. The agent never sets that status itself, and `ratified` is what authorises
+implementation, so setting it is granting oneself the authority to build.
 
 ### The one marker
 
@@ -185,7 +216,7 @@ its tests.
 | Operation | What it writes, in one logical update |
 |---|---|
 | **Instantiate** | Copy the template for the note type, fill the frontmatter, the status block, and §1–2, replace every remaining placeholder with real content or nothing, save. |
-| **Record a decision** | One `D-n` row · the affected body section rewritten to its new current state (the old text removed, not annotated) · the status block refreshed · any `Q-n` the decision answers marked `answered → D-n`. A scope correction, a method change, or a resolved question in a research note is a decision. |
+| **Record a decision** | Read the decision log first; if the ruling displaces a `D-m` the ask did not name, nothing is written and the override returns as its own ask. Otherwise: one `D-n` row naming who decided it, carrying the ask and the ruling it earned, and reaching no further than the ask did · the affected body section rewritten to its new current state (the old text removed, not annotated) · the status block refreshed · any `Q-n` the decision answers marked `answered → D-n`. A decision the agent made itself is recorded `orchestrator` and reported to the user in the same turn — never dressed as a ruling, never left for them to discover. A scope correction, a method change, or a resolved question in a research note is a decision. |
 | **Verify a premise** (spec) | The `P-n` row's state and evidence updated · the status block's awaiting count refreshed · when the state becomes `disproven`, the decision resting on it reopens as a `Q-n`. |
 | **Record a finding** (research) | One `X-n` row if something was run · the `E-n` rows it produced · the affected `F-n` rewritten with its new confidence · the status block refreshed. |
 | **Correct a claim** | The claim rewritten in place to what is now known · one `D-n` (or `X-n`) row stating what was wrong and what corrected it. Never a "CORRECTION" section. |
@@ -207,9 +238,12 @@ path, and the **Checkpoint** operation is the check. At every checkpoint, and al
 handoff or close, read the note's heading outline and status block against the template and
 fix drift before continuing: the H2 set and order; frontmatter fields; every value in the
 status block; every id the body references existing in its register; every `R-n` covered
-by a `W-n` and an `A-n`; no date or history vocabulary in body prose; no `⟨` left; tags per
-the contract. The reviewer's test is the standard's: a principal engineer reads Summary →
-status block → Design and can review without opening the log.
+by a `W-n` and an `A-n`; every `D-n` naming who decided it and carrying an ask its decision
+does not reach past; no `orchestrator` row in a specification at `ratified` or beyond; every
+displaced `D-m` named in the `Supersedes` cell of the row that displaced it; no date or
+history vocabulary in body prose; no `⟨` left; tags per the contract. The reviewer's test
+is the standard's: a principal engineer reads Summary → status block → Design and can
+review without opening the log.
 
 Vagueness and testability of requirements are judgment, not shape: the handoff review reads
 the `R-n` and `A-n` registers with a requirements-quality lens and reports findings to the

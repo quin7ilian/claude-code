@@ -109,7 +109,17 @@ updated: ⟨YYYY-MM-DD⟩
 ## 11. Decision log
 
 <!-- Append-only. One row per decision, correction, scope change, or tag introduction
-     (T-n rows live here too). Rationale and rejected alternatives in one or two lines. -->
+     (T-n rows live here too). Rationale and rejected alternatives in one or two lines.
+     Decided by is owner (the user ruled), orchestrator (the agent's own call, unratified),
+     or orchestrator → D-m (its call, ratified later by that row). Every row has one.
+     Asked is the ask as it was put to the user, one line, verbatim in substance — the
+     proposal they answered, never a summary composed afterward from the decision. An owner
+     row always carries its ask; an orchestrator row carries —. A Decision that reaches past
+     its Asked is an error and its excess is not ratified. Supersedes names every D-m this
+     ruling contradicts, narrows, or overrides, and the override was disclosed in the ask
+     that earned the ruling. An override noticed while writing means the row does not land:
+     it returns as its own ask. The spec reaches ratified on the user's word alone and only
+     when no row is orchestrator. -->
 
-| Id | Date | Decision | Supersedes | Rationale |
-|---|---|---|---|---|
+| Id | Date | Decided by | Asked | Decision | Supersedes | Rationale |
+|---|---|---|---|---|---|---|

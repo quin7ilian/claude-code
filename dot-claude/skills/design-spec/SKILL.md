@@ -28,13 +28,26 @@ system in chat and write the specification when the discussion ends.
 - Work through consequential design points iteratively: raise one coherent decision or
   tightly coupled group, present evidence and tradeoffs, obtain the user's direction.
 - The moment the user accepts, rejects, amends, or defers a point, perform **Record a
-  decision** from the standard's operations table: one `D-n` row; the affected body section
-  rewritten to its new current state with the old text removed, not annotated; the status
-  block refreshed; any `Q-n` it answers marked answered. One logical update.
+  decision** from the standard's operations table: one `D-n` row carrying the ask you put
+  and the ruling it earned; the affected body section rewritten to its new current state
+  with the old text removed, not annotated; the status block refreshed; any `Q-n` it
+  answers marked answered. One logical update.
 - A proposal the user has not ruled on is a `Q-n` row and a `[Q-n]` marker at the site that
   depends on it — never text blended into the agreed design.
-- Re-read §1 and the status block before raising the next decision, and after compaction,
-  resumption, or a long diversion. The note, not recalled transcript, is authoritative.
+- The ask is the contract for the write. What you record may not reach past what you put to
+  the user, at the altitude you put it: a consequence the ask omitted is a decision not
+  ratified, and it returns as its own ask or waits as a `Q-n`. Before saving, compare the
+  write against the ask you actually sent — a body rewrite reaching a section the ask never
+  named is the signal that it grew.
+- A ruling that would contradict, narrow, or override a prior `D-m` names that `D-m` in the
+  ask itself — what it required, what this does instead, what the user would observe change
+  — and takes its own ruling. An override you notice only while writing sends the decision
+  back before the row lands; you never fill `Supersedes` from your own reading after the
+  user has answered.
+- Re-read §1, the status block, and the decision log before raising the next decision, and
+  after compaction, resumption, or a long diversion. The status block names one prior
+  ruling; the log names them all, and a ruling you cannot see is one you can contradict
+  without noticing. The note, not recalled transcript, is authoritative.
 - Treat impending compaction, a subagent batch, and handoff as **Checkpoint** operations:
   re-read, reconcile, run the standard's self-check.
 
@@ -135,7 +148,10 @@ Checkpoint, then verify: the self-check passes; every `W-n` has a settled tier a
 covers at least one `R-n`; every `R-n` has an `A-n`; every `P-n` is `verified` or `awaiting
 verification` with its attempt and blocker recorded; no `[Q-n]` remains in the body once
 the status moves to `ratified`. A premise still awaiting verification is named in the
-handoff summary and is a binding stop condition in every `W-n` that rests on it.
+handoff summary and is a binding stop condition in every `W-n` that rests on it. You never
+move the status to `ratified` yourself: it goes there on the user's word, and only once no
+`D-n` row still reads `orchestrator` — that status is what authorises implementation, so
+setting it is granting yourself the authority to build.
 
 Run a requirements-quality review of §2 and §7 — the judgment the self-check does not make:
 attributes without a measurable value, requirements with a verb and no observable object,
@@ -144,10 +160,19 @@ For a sequence containing a `complex` item or any premise still awaiting verific
 is the `codex-plan-review` premise audit (the user may wave it off); otherwise a `verifier`
 lane reads the two registers. Findings follow the reviewer rules: each cites the `R-n`,
 `A-n`, `D-n`, or `P-n` it challenges — a finding that introduces a decision the owner has
-not made is contract invention, rejected not incorporated. Present every material finding
-to the user with its concrete scenario — when it occurs, when it does not, its effect — and
-change the specification only on the user's ruling, as **Record a decision**, never directly
-from the review.
+not made is contract invention, rejected not incorporated. Present every finding that would
+change what the specification means to the user with its concrete scenario — when it occurs,
+when it does not, its effect — and change the specification only on the user's ruling, as
+**Record a decision**, never directly from the review. Materiality orders how you present
+findings; it never decides whether the user hears one. Spelling, formatting and id
+renumbering are the whole of what lands without a ruling, and the message reporting the
+findings lists them.
+
+No part of a specification is mechanics. The mechanics-and-decisions split governs code
+briefs, where a disclosed design sits above an implementation free to vary beneath it; a note
+has no layer below its text, so every clause is a decision or a premise. "Minor", "a
+leftover of mine", and "mechanics under an earlier ruling" are the three phrasings this rule
+exists to refuse — each one ends with the specification edited on the agent's authority.
 
 Summarize the settled decisions, remaining risks or research gaps, and the exact
 implementation entry point, quoting the status block. Stop at the completed specification

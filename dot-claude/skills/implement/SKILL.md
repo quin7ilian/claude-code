@@ -105,16 +105,26 @@ what happens, under what conditions, and what the user observes. Abstraction is 
 inversion hides: "one unified validation rule" reads as ratified, while "a
 configuration the ruling made legal is now refused at load" gets vetoed.
 
+A condition the user set on proceeding is read off the verdict itself, never off your
+assessment of what produced it. Verdicts are a closed set and only the passing member is
+clean: `REVISE`, `NEEDS_CHANGES` and `BLOCKED` are not, however small the finding behind
+them looks. The verdict reaches the user whole before you act on it, and if you think a
+finding is too minor to hold the gate, that argument goes to them and they rule — it never
+self-executes. A gate you decided was close enough to satisfied is a gate you removed.
+
 Inside the signed-off design, implement without check-ins. The gate is deviation: a
 brief — initial or fix round — that would introduce or change a mechanism-altitude
 element the ratified design does not carry (a new surface, artifact, or data channel; a
 behavioral change — what is refused, fabricated, deferred, conceded; a workaround; a
-limitation; a scope extension; an interpretation of ambiguous intent) presents that
-delta for ruling before dispatch, each entry with its concrete example. A brief may
-exceed the disclosed design in mechanics, never in decisions; in doubt whether a detail
-is mechanics or a decision, it is a decision. When the user is unavailable, park the
-item with its delta recorded, continue items that do not depend on it, and lead the
-next report with the parked deltas — a parked item is the workflow working; an
+limitation; a scope extension; an interpretation of ambiguous intent; a reversal or
+narrowing of something the design already settled) presents that delta for ruling before
+dispatch, each entry with its concrete example. A delta that displaces a settled element
+names that element and what it required, so the ruling is on the trade rather than on the
+replacement seen alone. A brief may exceed the disclosed design in mechanics, never in
+decisions; in doubt whether a detail is mechanics or a decision, it is a decision. When
+the user is unavailable, park the item with its delta recorded, continue items that do
+not depend on it, and lead the next report with the parked deltas — a parked item is the
+workflow working; an
 undisclosed mechanism built overnight is not.
 
 **Every brief opens with this block, filled in — copy it, do not paraphrase it:**

@@ -118,13 +118,19 @@ ruling — never directly from the review, however sound a finding looks.
    change the plan.
 2. Research disputed library behavior or architecture claims yourself, using the exact dependency
    version.
-3. Adjudicate each material finding, premise before mechanics: it must cite the plan step, decision,
+3. Adjudicate every finding, premise before mechanics: it must cite the plan step, decision,
    or premise it challenges, and a finding grounded only in preference or an invented requirement is
    rejected, not folded in — that is how a review quietly drifts a ratified design.
 4. Present the adjudicated findings to the user — each paired with your verdict and its concrete
    scenario (when the problem occurs, when it does not, what the effect is), in plain terms — and
    revise the plan per their rulings, carrying accepted findings' validation and rollback work with
-   them.
+   them. Every finding that would change what the plan means is presented, whatever your verdict on
+   it; materiality orders the presentation and never decides whether the user hears one. Spelling,
+   formatting and id renumbering are the whole of what lands without a ruling, listed in the same
+   message. No part of a plan is mechanics — that split governs code briefs, where an
+   implementation is free to vary beneath a disclosed design, and a plan has no layer below its
+   text; "minor" and "mechanics under an earlier ruling" both end with the plan edited on your
+   authority.
 5. Recheck the revised plan for requirement coverage and internal consistency yourself; do not rerun
    Codex unless the user explicitly requests it.
 

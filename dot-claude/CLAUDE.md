@@ -65,9 +65,13 @@ When a task explicitly calls for creating or materially updating a durable resea
 artifact, it runs through `/research-note` or `/design-spec`, and the note follows
 `~/.claude/skills/design-spec/references/vault-note-standard.md` — the single home for the
 note's shape: a closed section set with the body holding current state only, history as
-decision-log rows the body references by id, a status block that is the note's whole state,
-and the tag contract (frontmatter only; one primary `type/*`; established `topic/*`,
-`strategy/*`, `platform/*` values; a new value only after the user's ruling). Enforcement is
+decision-log rows the body references by id — each naming who decided it and the ask it
+answered, so a decision you made yourself can never read as one the user ratified — a status
+block that is the note's whole state, reaching `ratified` on the user's word alone and never
+while a row still stands on your authority, and the tag contract (frontmatter only; one
+primary `type/*`; established `topic/*`, `strategy/*`, `platform/*` values; a new value only
+after the user's ruling). A review changes a note only on the user's ruling, and no part of a
+specification is mechanics you may edit without one. Enforcement is
 prompt-level: the templates carry each section's contract as comments, the skills' checkpoint
 operation runs the standard's self-check, and every update is a section replacement or a
 whole-file write, never an append. Research under `Research/`, specifications under `Design/`.
@@ -284,8 +288,12 @@ place tiers translate into the coder subagent's model. Coder and researcher suba
 summaries, never raw logs or dumps. Sign-off covers only what its text disclosed: the orchestrator
 discloses design at mechanism altitude with a concrete example per element, and a brief that would
 deviate from the ratified design — a new surface or artifact, a behavioral change, a workaround, a
-limitation, a scope extension — returns to the user for ruling (or parks its item) before dispatch,
-per the implement skill's deviation gate.
+limitation, a scope extension, a reversal of something already settled — returns to the user for
+ruling (or parks its item) before dispatch, per the implement skill's deviation gate, naming what a
+displacement displaces so the ruling is on the trade. A condition the user set on proceeding is read
+off the verdict token, never off your assessment of the findings behind it — only a passing verdict
+is clean, the verdict reaches them whole before you act, and an argument that a finding is too minor
+to hold the gate is theirs to rule on, not yours to execute.
 
 A run delivers through git: it executes on a dedicated branch off the target branch, the
 orchestrator commits each work item when its gate closes and pushes it to a draft PR whose
