@@ -9,9 +9,8 @@ defaults, the Obsidian vault path, the commit/PR attribution default, and the au
 switch.
 
 Everything else in the settings file — foreign hooks, unknown keys, user tuning — is
-preserved byte-for-byte. Handlers left behind by retired tooling (cc-retain,
-cc-reconcile-nudge) are removed from every hook event they appear under. Idempotent:
-re-running with the same inputs leaves the file untouched.
+preserved byte-for-byte. Idempotent: re-running with the same inputs leaves the file
+untouched.
 """
 
 from __future__ import annotations
@@ -29,8 +28,6 @@ from typing import Any
 MAX_MCP_OUTPUT_TOKENS = "50000"
 ARTIFACT_AUTO_OPEN = "0"
 ATTRIBUTION = {"commit": "", "pr": "", "sessionUrl": False}
-LEGACY_COMMAND_BASENAMES = ("cc-retain", "cc-reconcile-nudge")
-LEGACY_EVENTS = ("Stop", "SessionEnd", "SessionStart")
 
 
 def parse_args() -> argparse.Namespace:
@@ -91,13 +88,6 @@ def _command_arguments(handler: Any) -> list[str]:
 
 def _handler_uses_script(handler: Any, script_path: Path) -> bool:
     return str(script_path) in _command_arguments(handler)
-
-
-def _handler_is_legacy(handler: Any) -> bool:
-    return any(
-        os.path.basename(argument) in LEGACY_COMMAND_BASENAMES
-        for argument in _command_arguments(handler)
-    )
 
 
 def _without_handlers(groups: list[Any], drop: Any) -> list[Any]:
@@ -161,16 +151,6 @@ def merge_settings(
     hooks = document.setdefault("hooks", {})
     if not isinstance(hooks, dict):
         raise ValueError("settings.json field 'hooks' must be an object")
-
-    for event in LEGACY_EVENTS:
-        groups = hooks.get(event)
-        if not isinstance(groups, list):
-            continue
-        remaining = _without_handlers(groups, _handler_is_legacy)
-        if remaining:
-            hooks[event] = remaining
-        else:
-            del hooks[event]
 
     # The retention script runs on Stop (every completed turn) and SessionEnd (the final
     # chance to resubmit a turn whose transcript tail was not yet flushed at its Stop).

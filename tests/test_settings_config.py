@@ -93,61 +93,6 @@ class SettingsConfigTests(unittest.TestCase):
             self.assertEqual(len(owned), 1)
             self.assertEqual(owned[0]["timeout"], 10)
 
-    def test_merge_removes_legacy_curator_handlers_from_all_events(self) -> None:
-        document = {
-            "hooks": {
-                "Stop": [
-                    {
-                        "matcher": "*",
-                        "hooks": [
-                            {
-                                "type": "command",
-                                "command": "/home/user/.local/bin/cc-retain",
-                                "async": True,
-                            }
-                        ],
-                    }
-                ],
-                "SessionEnd": [
-                    {
-                        "hooks": [
-                            {
-                                "type": "command",
-                                "command": "/home/user/.local/bin/cc-retain --force",
-                            }
-                        ]
-                    }
-                ],
-                "SessionStart": [
-                    {
-                        "hooks": [
-                            {
-                                "type": "command",
-                                "command": "/home/user/.local/bin/cc-reconcile-nudge",
-                            },
-                            {"type": "command", "command": "python3 /tmp/keep.py"},
-                        ]
-                    }
-                ],
-            }
-        }
-
-        merged = merge_settings(document, owned_command(), SCRIPT)
-
-        session_start_commands = [
-            handler.get("command")
-            for group in merged["hooks"]["SessionStart"]
-            for handler in group.get("hooks", [])
-        ]
-        self.assertEqual(session_start_commands, ["python3 /tmp/keep.py"])
-        for event in ("Stop", "SessionEnd"):
-            commands = [
-                handler.get("command")
-                for group in merged["hooks"][event]
-                for handler in group.get("hooks", [])
-            ]
-            self.assertEqual(commands, [owned_command()])
-
     def test_env_default_is_added_only_when_absent(self) -> None:
         fresh = merge_settings({}, owned_command(), SCRIPT)
         self.assertEqual(fresh["env"]["MAX_MCP_OUTPUT_TOKENS"], "50000")
@@ -196,21 +141,7 @@ class SettingsConfigTests(unittest.TestCase):
 
     def test_primer_is_registered_on_session_start_alongside_foreign_hooks(self) -> None:
         foreign_handler = {"type": "command", "command": "python3 /tmp/keep.py"}
-        document = {
-            "hooks": {
-                "SessionStart": [
-                    {"hooks": [foreign_handler]},
-                    {
-                        "hooks": [
-                            {
-                                "type": "command",
-                                "command": "/home/user/.local/bin/cc-reconcile-nudge",
-                            }
-                        ]
-                    },
-                ]
-            }
-        }
+        document = {"hooks": {"SessionStart": [{"hooks": [foreign_handler]}]}}
 
         merged = merge_settings(
             document,
