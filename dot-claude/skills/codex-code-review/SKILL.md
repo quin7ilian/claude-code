@@ -71,7 +71,11 @@ Read the raw review exactly once. For every finding:
 1. Reproduce or inspect the cited evidence yourself.
 2. Accept, reject, or narrow the finding explicitly; Codex is advice, not an authority.
 3. If the active request includes implementation, fix accepted findings and rerun the most relevant
-   checks. Do not run another Codex pass unless the user explicitly requests it.
+   checks. Do not run another Codex pass unless the user explicitly requests it. When the user does,
+   keep this round's review file and run the follow-up per
+   `~/.claude/skills/implement/references/review-loop.md`: the new brief names every prior round's
+   review file by absolute path for the reviewer to read first, and carries your adjudications by
+   reference to what that review wrote, never a restatement of the finding in your own words.
 4. Present each Codex point beside your verdict and action, with its concrete scenario — when it
    occurs, when it does not, and its observable effect, in plain terms rather than the reviewer's
    shorthand. Do not silently drop or soften findings.

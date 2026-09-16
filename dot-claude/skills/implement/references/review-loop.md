@@ -16,8 +16,15 @@ round's findings are how the next round's findings get manufactured.
 - **One living brief**, updated between rounds and re-sent whole. Adjudications
   accumulate in it; a fresh prompt per round throws them away and invites re-litigated
   findings.
-- **A unique output file per round.** Concurrent runs on one path interleave and corrupt
-  both.
+- **A unique output file per round, kept and linked back.** Concurrent runs on one path
+  interleave and corrupt both, so each round writes its own file, outside the repository
+  and on a path the reviewer can read by absolute path — `/tmp` or the session scratchpad
+  — and every file stays on disk for the life of the loop. Each re-review brief names
+  every prior round's review file by absolute path and instructs the reviewer to read
+  them before judging anything. The reviewer does not remember its own last round, so a
+  finding reaching it only in the owner's words is a different finding: a rewording it
+  never wrote is one it can accept, passing what it previously failed. Its own text is
+  the only faithful record of what it found.
 - **Fixes route by tier** (`complexity-tiers.md`): a fix inherits the tier of the code it
   touches and is dispatched to a fresh agent window with the invariant ledger in its
   brief — never authored inline from a long session whose context has been compacted or
@@ -45,7 +52,11 @@ round's findings are how the next round's findings get manufactured.
    present; missing where required), every round. A finding that exposes a load-bearing
    invariant the ledger did not yet name adds it: the ledger grows by adjudication, not
    by anticipation, and the next round audits the new entry like any other.
-3. **Adjudications** — every prior finding filed under exactly one class, by the owner:
+3. **Adjudications** — every prior finding filed under exactly one class, by the owner,
+   cited by its round and its heading as that round's review wrote it. State the
+   disposition and the reasoning behind it; never restate the finding itself — the linked
+   review file is where the reviewer reads what it said, and a paraphrase competing with
+   it is the one input that can talk it out of a real finding. The classes:
    - **Fixed** — with its pinning test; the reviewer judges the current code, not the
      old description.
    - **Accepted** — the owner takes the cost knowingly; do not re-report.
@@ -90,7 +101,8 @@ Consult-then-apply: Codex proposes the patch, a Claude agent applies, tests, and
 it. Codex never writes the tree.
 
 The consult brief opens "working session, not a review — give me the patch" and carries:
-the finding; the constraints in priority order; every prior failed attempt and why it was
+the finding, cited from the round's review file named by absolute path rather than
+restated; the constraints in priority order; every prior failed attempt and why it was
 wrong; the invariant ledger; pointers to the repository discipline the patch must match;
 and the repository's instruction files by absolute path, to be read first. Point at files
 rather than pasting artifacts; never name `.env` files, credentials, or key material.
