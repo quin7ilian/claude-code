@@ -25,6 +25,8 @@ Write a focused, self-contained brief to a temporary Markdown file containing:
 - the complete plan, copied faithfully or referenced by absolute path;
 - the user's goal, specification, acceptance criteria, constraints, non-goals, and rollout
   expectations;
+- where the plan is a specification carrying an oracle register, those rows with each
+  cited authority, and the authority documents themselves by absolute path;
 - decisions already made and alternatives already rejected, with reasons;
 - known uncertainties and research claims embedded in the plan;
 - the absolute repository root and any external artifacts Codex should inspect;
@@ -64,6 +66,10 @@ idempotency, rollout, observability, rollback/recovery, testing strategy, accept
 and maintainability. Identify simpler or safer alternatives when they materially improve the plan;
 do not bikeshed equivalent choices.
 
+Where the plan carries an oracle register, one question outranks the rest: does every row state what
+its cited authority states, read from that authority rather than from the plan. A plan checked only
+against itself is internally consistent and can still encode a rule no source has.
+
 Continue until every plan step, acceptance criterion, and load-bearing assumption has been examined
 or a specific evidence gap is recorded. Do not optimize for speed, brevity, or a fixed number of
 findings. Never modify the repository and never read secrets, credentials, .env files, private keys,
@@ -71,7 +77,8 @@ or ~/.ssh.
 
 Output:
 1. Verdict: READY, REVISE, or BLOCKED, with rationale.
-2. Requirement and acceptance-criteria coverage matrix mapped to plan steps.
+2. Requirement and acceptance-criteria coverage matrix mapped to plan steps, and for a
+   specification with an oracle register, each row's verdict against its cited authority.
 3. Findings ordered by impact, each anchored to the specific plan step, stated decision, or premise
    it challenges — a finding that cannot name one is not reported, and never introduce a decision or
    restriction the plan's owner has not made — with evidence, a concrete scenario stating when the

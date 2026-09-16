@@ -70,7 +70,7 @@ rewritten in the same write as any change it summarises.
 | 4 | Research basis | Wikilinks to the Research notes that materially informed the design, one line each on what was taken. |
 | 5 | Design | The chosen design as it stands. Architecture, components, data flow, invariants. Alternatives appear only as decision-log rows. |
 | 6 | Interfaces and behaviour | Contracts, state transitions, failure and operational behaviour, security and privacy boundaries, migration, observability — those that apply. |
-| 7 | Validation and acceptance | Table of `A-n` rows: scenario · exact expected result · covers `R-n`. Concrete observable values, never prose. |
+| 7 | Validation and acceptance | Table of `O-n` oracle rows: rule · formula in named variables or stated invariant · authority (an external source cited to document and section, or a `D-n`) · worked example as inputs → expected output. Then table of `A-n` rows: scenario · exact expected result · oracle `O-n` · covers `R-n`. Concrete observable values, never prose. |
 | 8 | Implementation sequence | Table of `W-n` rows: item · tier · status · depends on · covers `R-n` · stop conditions. Tiers per `complexity-tiers.md`; status `todo` · `in-progress` · `done` · `blocked` · `dropped`. |
 | 9 | Premise register | Table of `P-n` rows: claim · state (`verified` · `awaiting verification` · `disproven`) · evidence, or what was tried, what blocks it, what unblocks it. |
 | 10 | Open questions | Table of `Q-n` rows: question · what it blocks · status (`open` · `answered → D-n`). |
@@ -102,14 +102,15 @@ section goes to an appendix or a separate note.
 
 ### Identifiers and cross-references
 
-Registers assign ids in their own namespace — `R-n` requirements, `A-n` acceptance rows,
-`W-n` work items, `P-n` premises, `Q-n` open questions, `D-n` decisions, `T-n` tag
-introductions (specification); `RQ-n`, `F-n`, `E-n`, `X-n`, `Q-n`, `D-n`, `T-n` (research).
+Registers assign ids in their own namespace — `R-n` requirements, `O-n` oracles, `A-n`
+acceptance rows, `W-n` work items, `P-n` premises, `Q-n` open questions, `D-n` decisions,
+`T-n` tag introductions (specification); `RQ-n`, `F-n`, `E-n`, `X-n`, `Q-n`, `D-n`, `T-n`
+(research).
 Ids are never reused or renumbered. The body references a register entry by id only; an id
 referenced anywhere must exist in its register. Where this standard lists the legal values of
 a register column — `W` status, `P` state, `Q` and `RQ` status, `F` confidence, `D` decided
 by — a cell holding anything else is an error. Every `R-n` is covered by at least one `W-n`
-and at least one `A-n`; every `W-n` names at least one `R-n`.
+and at least one `A-n`; every `W-n` names at least one `R-n`; every `A-n` names one `O-n`.
 
 ### Authority, the ask, and the ruling
 
@@ -138,9 +139,43 @@ current state only, these cells are the sole surviving record that a prior rulin
 at all.
 
 A specification reaches `ratified` on the user's word alone, and only when no row is
-`orchestrator` — an unratified row is a decision the design rests on that its owner has never
-seen. The agent never sets that status itself, and `ratified` is what authorises
-implementation, so setting it is granting oneself the authority to build.
+`orchestrator` and every `A-n` names an `O-n` whose authority is settled — an unratified row
+is a decision the design rests on that its owner has never seen, and an acceptance row with
+no oracle is a number nobody has traced. The agent never sets that status itself, and
+`ratified` is what authorises implementation, so setting it is granting oneself the authority
+to build.
+
+### The oracle
+
+An acceptance row states a number, and nothing about a number says where it came from: a
+value an authority published and a value read back off the implementation sit in the same
+cell looking identical. The `O-n` register is what tells them apart.
+
+An oracle is what a result is checked against, and it qualifies only if it can be evaluated
+without the implementation. Three forms do: an external source's own rule, cited to document
+and section; a formula in named variables the specification states; the user's ruling, named
+by its `D-n`. Three do not: the implementation's current behaviour, a reading of prose never
+reduced to a formula, and a value whose derivation nobody recorded. A row that would have to
+claim one of those is not an oracle but the open question it stands in for, and it waits in
+§10 until the user settles it.
+
+Every `A-n` names the `O-n` its expected result comes from. A row that cannot name one
+describes what will happen rather than testing whether the right thing happened, and it
+passes just as green when the design is wrong — the whole failure acceptance rows exist to
+catch. The worked example in an oracle row is computed from its authority by someone who has
+not read the design; where the design is the only thing that can produce the number, there is
+no oracle yet.
+
+The design answers to the register rather than sitting beside it. Every field, enum member,
+parameter and default in §5–6 cites the `O-n` rows that require it, and a value an oracle
+derives is never a configurable field. A parameter no row needs is a shape no authority has:
+validation that admits it will eventually be handed it, and a test suite will then pin that
+shape as intended behaviour. The register runs in one direction — rows first, then the
+smallest design expressing exactly those rows.
+
+When the register outgrows the body budget the worked examples move to an appendix and the
+row cites the anchor, but the formula and the authority stay in the row: they are the contract
+the design is derived from, and an appendix is optional reading.
 
 ### The one marker
 
@@ -217,6 +252,7 @@ its tests.
 |---|---|
 | **Instantiate** | Copy the template for the note type, fill the frontmatter, the status block, and §1–2, replace every remaining placeholder with real content or nothing, save. |
 | **Record a decision** | Read the decision log first; if the ruling displaces a `D-m` the ask did not name, nothing is written and the override returns as its own ask. Otherwise: one `D-n` row naming who decided it, carrying the ask and the ruling it earned, and reaching no further than the ask did · the affected body section rewritten to its new current state (the old text removed, not annotated) · the status block refreshed · any `Q-n` the decision answers marked `answered → D-n`. A decision the agent made itself is recorded `orchestrator` and reported to the user in the same turn — never dressed as a ruling, never left for them to discover. A scope correction, a method change, or a resolved question in a research note is a decision. |
+| **Record an oracle** (spec) | One `O-n` row: the rule, its formula or invariant, its authority, and a worked example computed from that authority and not from the design · every `A-n` it serves updated to name it · every field, enum member and default it stops requiring removed from §5–6 in the same update. An oracle only the user can settle is a `Q-n` first and lands on the ruling. |
 | **Verify a premise** (spec) | The `P-n` row's state and evidence updated · the status block's awaiting count refreshed · when the state becomes `disproven`, the decision resting on it reopens as a `Q-n`. |
 | **Record a finding** (research) | One `X-n` row if something was run · the `E-n` rows it produced · the affected `F-n` rewritten with its new confidence · the status block refreshed. |
 | **Correct a claim** | The claim rewritten in place to what is now known · one `D-n` (or `X-n`) row stating what was wrong and what corrected it. Never a "CORRECTION" section. |
@@ -238,7 +274,9 @@ path, and the **Checkpoint** operation is the check. At every checkpoint, and al
 handoff or close, read the note's heading outline and status block against the template and
 fix drift before continuing: the H2 set and order; frontmatter fields; every value in the
 status block; every id the body references existing in its register; every `R-n` covered
-by a `W-n` and an `A-n`; every `D-n` naming who decided it and carrying an ask its decision
+by a `W-n` and an `A-n`; every `A-n` naming an `O-n`, and every `O-n` an authority that is
+not the implementation; every field, enum member and default in §5–6 citing the `O-n` that
+requires it; every `D-n` naming who decided it and carrying an ask its decision
 does not reach past; no `orchestrator` row in a specification at `ratified` or beyond; every
 displaced `D-m` named in the `Supersedes` cell of the row that displaced it; no date or
 history vocabulary in body prose; no `⟨` left; tags per the contract. The reviewer's test
@@ -246,5 +284,5 @@ is the standard's: a principal engineer reads Summary → status block → Desig
 review without opening the log.
 
 Vagueness and testability of requirements are judgment, not shape: the handoff review reads
-the `R-n` and `A-n` registers with a requirements-quality lens and reports findings to the
-user for ruling.
+the `R-n`, `O-n` and `A-n` registers with a requirements-quality lens — including whether each
+oracle says what its cited authority says — and reports findings to the user for ruling.

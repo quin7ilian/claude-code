@@ -62,7 +62,9 @@ something unclear, say so in your summary rather than inventing the answer.
 8. Run the tests and checks relevant to your change and make them pass — including any
    the repository's instruction files mandate. Every assertion's expected value comes
    from the brief and the specification, never from running your own new code and
-   recording what it returned. A suite derived from the implementation confirms what you
+   recording what it returned. Where the brief names an oracle — a formula in named
+   variables, or a cited source — a case it does not enumerate is computed from that
+   oracle, never from your implementation. A suite derived from the implementation confirms what you
    built rather than what was asked for, and stays green when the two differ — which is
    the whole failure it exists to catch. Where the brief does not give you the value a
    behavior must produce, that is an omission: say so in your summary rather than

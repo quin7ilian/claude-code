@@ -81,12 +81,17 @@ item's tier with its review requirement (`complex` → per-item review; `trivial
 `standard` → review deferred to the batch). **Acceptance criteria carry concrete
 observable values, not prose** — the scenario and the exact result it must produce ("a
 request arriving after the window closes is refused with 409, not queued"); for a fix,
-the defect scenario and the value correct behavior yields there. A coder handed prose
-derives its expected values from the code it just wrote, so its tests confirm the
-implementation instead of the specification and pass just as green when the
-implementation is wrong. This is the only point in the workflow where those values can
-still come from somewhere other than the code — you hold the spec and the ledger; the
-coder holds neither. Design is not delegable: any contract, interface, or surface shape
+the defect scenario and the value correct behavior yields there. Where the item comes
+from a specification, those values are its `A-n` rows, and the brief carries the `O-n`
+oracle each one names — the formula and its authority, not only the number — so a coder
+that has to compute a case the rows do not enumerate computes it from the authority
+rather than from what it just built. An oracle that is a formula over a parameter space
+gets a sweep rather than points: the item lands a permanent test comparing formula to
+implementation across the legal range, so a later field or default admitting a shape the
+authority has no rule for fails at once instead of being pinned as intended behavior. A
+coder handed prose derives its expected values from the code it just wrote, so its tests
+confirm the implementation instead of the specification and pass just as green when the
+implementation is wrong. You hold the spec and the ledger; the coder holds neither. Design is not delegable: any contract, interface, or surface shape
 the item introduces is settled before it reaches a coder — by the spec, the user, or you
 — whether it travels in a brief or a mid-run relay. A dispatch that leaves one open is
 malformed. The mirror rule binds downstream: what the spec and brief leave unstated is a

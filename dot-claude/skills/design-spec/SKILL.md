@@ -93,10 +93,16 @@ row; if it blocks the design, stop and let the user decide whether to start
   load-bearing, it is.
 - Specify architecture, components, data flows, interfaces, state transitions, operational
   behavior, security and privacy boundaries, migration or rollout, observability, and
-  testing across §5–6, omitting what genuinely does not apply. §7 Validation and
-  acceptance holds `A-n` rows with concrete observable values — the scenario and the exact
-  result it must produce — never prose: an implementer handed prose derives its assertions
-  from the code it just wrote.
+  testing across §5–6, omitting what genuinely does not apply. Build in the standard's
+  order: the `O-n` oracle rows first, then the smallest design expressing exactly those
+  rows, then the `A-n` rows whose values the oracles supply. A design settled before its
+  oracles acquires fields no authority requires, and acceptance values written after the
+  design get read back off the thing they exist to test.
+- Sourcing an oracle's authority is a lane, and the lane must not have read the design: a
+  `researcher` sent for a source's own rules and worked examples returns numbers nobody
+  derived from the specification. Where no external authority exists the oracle is a
+  formula you put to the user, or their ruling by `D-n` — never your own reading of prose
+  left unreduced, which is the form that can be neither checked nor argued with.
 - Keep the design internally consistent and implementation-ready at the level requested.
   Do not edit production code, implement the feature, or expand into unrelated work.
 - Invoke no Codex skill during design. The single exception is the premise audit the
@@ -145,17 +151,23 @@ like any other decision; tier the work item, not its file count; tie-break upwar
 ## Complete the handoff
 
 Checkpoint, then verify: the self-check passes; every `W-n` has a settled tier and
-covers at least one `R-n`; every `R-n` has an `A-n`; every `P-n` is `verified` or `awaiting
+covers at least one `R-n`; every `R-n` has an `A-n`; every `A-n` names an `O-n` and every
+`O-n` carries a settled authority that is not the design; every field, enum member and
+default in §5–6 cites the `O-n` requiring it; every `P-n` is `verified` or `awaiting
 verification` with its attempt and blocker recorded; no `[Q-n]` remains in the body once
 the status moves to `ratified`. A premise still awaiting verification is named in the
 handoff summary and is a binding stop condition in every `W-n` that rests on it. You never
 move the status to `ratified` yourself: it goes there on the user's word, and only once no
-`D-n` row still reads `orchestrator` — that status is what authorises implementation, so
-setting it is granting yourself the authority to build.
+`D-n` row still reads `orchestrator` and no `A-n` is missing its oracle — that status is
+what authorises implementation, so setting it is granting yourself the authority to build.
 
 Run a requirements-quality review of §2 and §7 — the judgment the self-check does not make:
 attributes without a measurable value, requirements with a verb and no observable object,
 acceptance rows whose result is not observable, terminology that drifts between sections.
+The oracle register takes its own question, the one that catches a design built on a misread
+source: does every `O-n` say what its cited authority says. That question is answered against
+the authority and the row alone — a reviewer handed the design checks the specification
+against itself, which is how a wrong rule survives every gate downstream of it.
 For a sequence containing a `complex` item or any premise still awaiting verification, this
 is the `codex-plan-review` premise audit (the user may wave it off); otherwise a `verifier`
 lane reads the two registers. Findings follow the reviewer rules: each cites the `R-n`,

@@ -60,6 +60,8 @@ updated: ⟨YYYY-MM-DD⟩
 
 <!-- The chosen design as it stands: architecture, components, data flow, invariants.
      Alternatives and their rejection are D-n rows, not paragraphs here.
+     Every field, enum member, parameter and default cites the O-n (§7) that requires it;
+     a value an oracle derives is never a configurable field.
      H3s name parts of the design — never a date, revision, or reading instruction. -->
 
 ⟨design⟩
@@ -67,18 +69,33 @@ updated: ⟨YYYY-MM-DD⟩
 ## 6. Interfaces and behaviour
 
 <!-- Contracts, state transitions, failure and operational behaviour, security and
-     privacy boundaries, migration, observability — those that apply. Omit what does not. -->
+     privacy boundaries, migration, observability — those that apply. Omit what does not.
+     A behaviour example here is worked from its O-n, never from the intended code.
+     Every surface a caller can set cites the O-n that requires it. -->
 
 ⟨interfaces⟩
 
 ## 7. Validation and acceptance
 
-<!-- One row per observable outcome: the scenario and the exact result it must produce.
-     Concrete values, never prose — an implementer derives tests from these rows. -->
+<!-- Two registers. O-n is the oracle: what a result is checked against, evaluable without
+     the implementation. Legal authorities — an external source cited to document and
+     section, a formula in named variables stated here, or the user's ruling by D-n. Never
+     the implementation's current behaviour, never a reading of prose left unreduced, never
+     a value whose derivation nobody recorded; a row that would claim one of those is a Q-n
+     in §10 until the user settles it. The worked example is computed from the authority,
+     not from the design.
 
-| Id | Scenario | Expected result | Covers |
-|---|---|---|---|
-| A-1 | ⟨scenario⟩ | ⟨exact observable result⟩ | R-1 |
+     A-n is one row per observable outcome, each naming the O-n its expected result comes
+     from. Concrete values, never prose — an implementer derives tests from these rows, and
+     a row with no oracle passes green when the design itself is wrong. -->
+
+| Id | Rule | Formula or invariant | Authority | Worked example |
+|---|---|---|---|---|
+| O-1 | ⟨rule⟩ | ⟨formula in named variables⟩ | ⟨source · document §x, or D-n⟩ | ⟨inputs → expected output⟩ |
+
+| Id | Scenario | Expected result | Oracle | Covers |
+|---|---|---|---|---|
+| A-1 | ⟨scenario⟩ | ⟨exact observable result⟩ | O-1 | R-1 |
 
 ## 8. Implementation sequence
 

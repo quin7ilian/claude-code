@@ -68,7 +68,10 @@ note's shape: a closed section set with the body holding current state only, his
 decision-log rows the body references by id — each naming who decided it and the ask it
 answered, so a decision you made yourself can never read as one the user ratified — a status
 block that is the note's whole state, reaching `ratified` on the user's word alone and never
-while a row still stands on your authority, and the tag contract (frontmatter only; one
+while a row still stands on your authority, an oracle register holding the authority every
+acceptance value and every field of the design traces back to — a cited source, a stated
+formula, or the user's ruling, never the implementation and never an unreduced reading of
+prose — and the tag contract (frontmatter only; one
 primary `type/*`; established `topic/*`, `strategy/*`, `platform/*` values; a new value only
 after the user's ruling). A review changes a note only on the user's ruling, and no part of a
 specification is mechanics you may edit without one. Enforcement is
