@@ -56,8 +56,12 @@ a `verdict: PASS` or `verdict: NEEDS_CHANGES`).
 codex-review \
   --brief "/absolute/path/to/codex-code-review-brief.md" \
   --repo "/absolute/path/to/repository" \
-  --out "/absolute/path/to/codex-code-review.md"
+  --out "/absolute/path/to/codex-review--<subject>--r1.md" \
+  --session-file "/absolute/path/to/codex-review--<subject>.session"
 ```
+
+`--session-file` costs nothing on a single pass and is what a later round resumes, so pass it
+even when you expect no second round.
 
 Codex runs from an ephemeral scratch workspace with network and web access; the repository under
 review stays kernel-enforced read-only. Codex inherits the user's configured model and reasoning
@@ -66,21 +70,24 @@ the concise error and continue with your own review. Never treat an unavailable 
 
 ## Verify and respond
 
-Read the raw review exactly once. For every finding:
+Publish the review as a private Artifact the moment it lands — before adjudicating a single
+finding, and again for every later round as that round completes — per `~/.claude/CLAUDE.md`, which
+also governs the file's name and the sweep that retires it. Then read the raw review exactly once.
+For every finding:
 
 1. Reproduce or inspect the cited evidence yourself.
 2. Accept, reject, or narrow the finding explicitly; Codex is advice, not an authority.
 3. If the active request includes implementation, fix accepted findings and rerun the most relevant
    checks. Do not run another Codex pass unless the user explicitly requests it. When the user does,
    keep this round's review file and run the follow-up per
-   `~/.claude/skills/implement/references/review-loop.md`: the new brief names every prior round's
-   review file by absolute path for the reviewer to read first, and carries your adjudications by
-   reference to what that review wrote, never a restatement of the finding in your own words.
+   `~/.claude/skills/implement/references/review-loop.md`: `--resume` with the same
+   `--session-file` and one `--prior` per earlier round, and a brief that carries your
+   adjudications by reference to what that review wrote, never a restatement of the finding in
+   your own words.
 4. Present each Codex point beside your verdict and action, with its concrete scenario — when it
    occurs, when it does not, and its observable effect, in plain terms rather than the reviewer's
    shorthand. Do not silently drop or soften findings.
 
-Publish the raw review as a private Artifact — the `.md` file itself, unedited, titled as a Codex
-review of this change — and give the user its link and path, the paired assessment, the final
-verdict, and verified test results. The review body stays out of the message: it is Codex's text,
+Give the user the published Artifact's link and path, the paired assessment, the final verdict,
+and verified test results. The review body stays out of the message: it is Codex's text,
 not yours. Keep unverified concerns clearly labeled.

@@ -108,8 +108,8 @@ codex exec --skip-git-repo-check \
   -c web_search=live \
   -C "$SCRATCH" \
   "$(cat "/absolute/path/to/codex-plan-review-brief.md")" </dev/null \
-  >"/absolute/path/to/codex-plan-review.md" \
-  2>"/absolute/path/to/codex-plan-review.stderr"
+  >"/absolute/path/to/codex-review--<plan>-plan--r1.md" \
+  2>"/absolute/path/to/codex-review--<plan>-plan--r1.stderr"
 ```
 
 Wait for the complete run. Fill thin areas with your own native inspection and research; do not
@@ -141,7 +141,8 @@ ruling — never directly from the review, however sound a finding looks.
 5. Recheck the revised plan for requirement coverage and internal consistency yourself; do not rerun
    Codex unless the user explicitly requests it.
 
-Publish the raw Codex report as a private Artifact — the `.md` file itself, unedited, titled as a
-Codex plan review of this plan — and give the user its link and path, the finding-by-finding
+Publish the raw Codex report as a private Artifact the moment it lands, before adjudicating its
+findings, per `~/.claude/CLAUDE.md` — which also governs the file's name and the sweep that retires
+it. Give the user its link and path, the finding-by-finding
 assessment above, the amendments made or awaiting ruling, verified sources, and the final readiness
 verdict. The report body stays out of the message: it is Codex's text, not yours.

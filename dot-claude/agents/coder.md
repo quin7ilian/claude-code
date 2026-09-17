@@ -92,7 +92,10 @@ When the per-item review applies:
    pressure-testing. Point at files; do not paste large diffs. Never name or direct the
    reviewer to `.env` files, credentials, private keys, `~/.ssh`, or unrelated personal
    directories.
-3. Run: `codex-review --brief <brief.md> --repo <repo-root> --out <review.md>`
+3. Run: `codex-review --brief <brief.md> --repo <repo-root> --out <review.md>
+   --session-file <session.id>`, naming the output `codex-review--<item>--r<N>.md` — you hold
+   no `Artifact` tool, and the orchestrator publishes each file you name by that path. Every
+   later round adds `--resume` and one `--prior` per earlier round's review file.
 4. Read the review once. For every finding, verify its premise before its mechanics:
    the contract it cites must exist — in your brief, the repository's instruction files,
    or the language and its libraries — and say what the finding claims. Accurate

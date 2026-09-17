@@ -107,13 +107,28 @@ markdown shows raw or not at all in the IDE and on mobile. Route by what the use
 - **Content the user reads now** — findings, verdicts, decisions, summaries — is in the message, in
   your own words.
 - **Content from another source** — a Codex review, dossier, or brainstorm; a tearsheet; an
-  external report — is published as its own private Artifact, titled by source ("Codex review —
-  <change>"), and the message carries only the pointer: the source, a one-line verdict or summary,
-  the link, and the file's path for a desktop or IDE reader. Never reproduce the body in chat,
-  where it reads as your own words and floods the scrollback, and never make a file card its sole
-  carrier. Verbatim third-party text is published as the `.md` file itself — the platform renders
-  it, the words stay the author's, and nothing is spent restyling; images and self-contained HTML
-  are published as HTML with assets inlined as data URIs.
+  external report — is published as its own private Artifact the moment it lands, before you act
+  on what it says: one Artifact per pass or round, published as that round completes, never a
+  batch assembled at the end of a loop. A context without the `Artifact` tool — a coder or other
+  subagent — returns the file's absolute path in its summary and the context holding the tool
+  publishes it on receipt. A published `.md` takes its title from the file's basename, so the
+  name is the title and nothing else sets it: name every Codex review file
+  `codex-review--<subject>--r<N>.md`, which is also the marker the sweep below matches. The
+  message carries only the pointer: the source, a one-line verdict or summary, the link, and the
+  file's path for a desktop or IDE reader. Never reproduce the body in chat, where it reads as
+  your own words and floods the scrollback, and never make a file card its sole carrier. Verbatim
+  third-party text is published as the `.md` file itself — the platform renders it, the words stay
+  the author's, and nothing is spent restyling; images and self-contained HTML are published as
+  HTML with assets inlined as data URIs.
+- **Review artifacts are swept, never accumulated.** When a review ends — a single pass, or a loop
+  reaching PASS or its round limit — list the artifacts (`Artifact` `list`, `limit: 50`) and delete
+  every `codex-review--*` entry last updated more than three days ago. This rule is the standing
+  authorization for that exact class, so the sweep runs without asking and reports what it deleted,
+  by name, in the closing message: a turn spent asking costs more than the artifacts are worth. The
+  marker and the age are the whole licence — an entry that lacks the marker, or any artifact that is
+  not a review, is never swept and never deleted on your own reading of what looks stale. The
+  listing window is the 50 most recent, so each sweep that deletes lets the next one reach further
+  back.
 - **Files the user will save or use elsewhere** — code, scripts, data — go through `SendUserFile`,
   always with a real extension. It is never a reading surface.
 

@@ -23,8 +23,12 @@ vault; Codex is the only external model.
 - **Codex invocations** are non-interactive (`</dev/null`) and run `--sandbox workspace-write`
   with an ephemeral scratch `-C` and network/web enabled — the writable workspace is the scratch
   and `/tmp`, so the repository stays kernel-enforced read-only in every pass, reviews included.
-  Never pass model or effort flags — Codex inherits the user's own configuration. Point Codex at
-  files by absolute path instead of pasting large artifacts; never at secret-bearing paths.
+  A resumed review round reaches the same policy through `-c sandbox_mode="workspace-write"` and
+  a scratch process cwd, because `codex exec resume` accepts neither `--sandbox` nor `-C` and
+  otherwise runs at the user's configured default — which is why nothing may resume a session
+  without that override. Never pass model or effort flags — Codex inherits the user's own
+  configuration. Point Codex at files by absolute path instead of pasting large artifacts; never
+  at secret-bearing paths.
 - **Python** is OS-python3, pure stdlib — no venv, no third-party dependencies. Hooks are fail-open:
   on their own failure or uncertainty they do nothing — never an error into a session, never a
   logged payload or credential. A hook blocks only as a defined policy gate (the instruction-read

@@ -21,10 +21,18 @@ round's findings are how the next round's findings get manufactured.
   and on a path the reviewer can read by absolute path — `/tmp` or the session scratchpad
   — and every file stays on disk for the life of the loop. Each re-review brief names
   every prior round's review file by absolute path and instructs the reviewer to read
-  them before judging anything. The reviewer does not remember its own last round, so a
+  them before judging anything. Each round's file is published as its own Artifact when it
+  lands, before its findings are adjudicated, under the naming and sweep rules in
+  `~/.claude/CLAUDE.md`. The reviewer does not remember its own last round, so a
   finding reaching it only in the owner's words is a different finding: a rewording it
   never wrote is one it can accept, passing what it previously failed. Its own text is
   the only faithful record of what it found.
+- **One reviewer session across the loop.** Round 1 opens it with `codex-review --session-file
+  <path>`; every later round adds `--resume` and one `--prior` per earlier round's review file.
+  The reviewer then keeps the repository it already explored and its own findings in context
+  instead of re-deriving both, which is most of what a round costs. `--resume` refuses to run
+  without `--prior`, and a resume Codex cannot honour falls back to a fresh session against the
+  same prompt: slower, never skipped.
 - **Fixes route by tier** (`complexity-tiers.md`): a fix inherits the tier of the code it
   touches and is dispatched to a fresh agent window with the invariant ledger in its
   brief — never authored inline from a long session whose context has been compacted or
@@ -94,6 +102,8 @@ round's findings are how the next round's findings get manufactured.
   the remaining findings.
 - A loop that reaches its round limit returns with unresolved findings explicitly
   flagged, never silently softened.
+- However the loop ends, run the review-artifact sweep in `~/.claude/CLAUDE.md` before
+  the closing report.
 
 ## Pair-mode consults
 

@@ -12,27 +12,58 @@
 # The review ends with a `verdict: PASS` or `verdict: NEEDS_CHANGES` line. A missing,
 # failed, or empty review exits non-zero — an unavailable reviewer is NEVER a pass.
 #
+# A re-review round resumes the first round's session (--resume with --session-file), so the
+# reviewer keeps the repository it already explored and its own findings in context instead of
+# re-deriving both. `codex exec resume` accepts neither --sandbox nor -C: the sandbox is
+# re-asserted with -c, or the run silently inherits the user's configured default, and the
+# working root is the process cwd. Every re-review also names the earlier rounds' review files
+# (--prior), which the reviewer reads verbatim — a session that compacts, and a resume that
+# fails into a fresh session, must still meet its own earlier findings rather than a paraphrase.
+#
 # Usage:
-#   codex-review --brief /abs/path/brief.md --repo /abs/path/repo [--out /abs/path/review.md]
+#   codex-review --brief /abs/brief.md --repo /abs/repo [--out /abs/review.md]
+#                [--prior /abs/round-N.md]... [--session-file /abs/session.id] [--resume]
 set -euo pipefail
 
-BRIEF="" REPO="" OUT=""
+BRIEF="" REPO="" OUT="" SESSION_FILE="" RESUME=0
+PRIORS=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    --brief) BRIEF="${2:-}"; shift 2 ;;
-    --repo)  REPO="${2:-}";  shift 2 ;;
-    --out)   OUT="${2:-}";   shift 2 ;;
+    --brief)        BRIEF="${2:-}";        shift 2 ;;
+    --repo)         REPO="${2:-}";         shift 2 ;;
+    --out)          OUT="${2:-}";          shift 2 ;;
+    --prior)        PRIORS+=("${2:-}");    shift 2 ;;
+    --session-file) SESSION_FILE="${2:-}"; shift 2 ;;
+    --resume)       RESUME=1;              shift ;;
     *) echo "codex-review: unknown argument '$1'" >&2; exit 2 ;;
   esac
 done
 
 if [ -z "$BRIEF" ] || [ -z "$REPO" ]; then
-  echo "usage: codex-review --brief FILE --repo DIR [--out FILE]" >&2
+  echo "usage: codex-review --brief FILE --repo DIR [--out FILE] [--prior FILE]... [--session-file FILE] [--resume]" >&2
   exit 2
 fi
 if [ ! -f "$BRIEF" ]; then
   echo "codex-review: brief file not found: $BRIEF" >&2
   exit 2
+fi
+for prior in ${PRIORS[@]+"${PRIORS[@]}"}; do
+  if [ ! -f "$prior" ]; then
+    echo "codex-review: prior review not found: $prior" >&2
+    exit 2
+  fi
+done
+# A resumed round is a re-review, and a re-review that cannot point at what the reviewer said
+# last time is the round that argues a finding away in the owner's words.
+if [ "$RESUME" -eq 1 ]; then
+  if [ -z "$SESSION_FILE" ]; then
+    echo "codex-review: --resume requires --session-file" >&2
+    exit 2
+  fi
+  if [ "${#PRIORS[@]}" -eq 0 ]; then
+    echo "codex-review: --resume requires at least one --prior (the previous round's review file)" >&2
+    exit 2
+  fi
 fi
 if [ ! -d "$REPO" ]; then
   echo "codex-review: repository directory not found: $REPO" >&2
@@ -133,13 +164,42 @@ report each violated rule as a finding. If you found no instruction files, say s
 this section makes the review incomplete. If there are no findings, say so plainly; do not invent
 issues.'
 
+PRIOR_NOTE=""
+if [ "${#PRIORS[@]}" -gt 0 ]; then
+  PRIOR_LIST=""
+  for prior in "${PRIORS[@]}"; do
+    PRIOR_LIST="${PRIOR_LIST}${prior}
+"
+  done
+  PRIOR_NOTE="
+
+## Your earlier reviews of this change
+
+${PRIOR_LIST}
+Read these before judging anything: they are your own findings from the earlier rounds, verbatim.
+The brief files each one under an adjudication and references it rather than restating it, because
+a finding that reaches you only in the owner's words is a different finding — one you never wrote,
+and one you can accept a rewording of after refusing the original."
+fi
+
+RESUME_NOTE=""
+if [ "$RESUME" -eq 1 ]; then
+  RESUME_NOTE="
+
+## This round continues your own session
+
+The working tree has moved since your last round: the fixes the brief adjudicates have landed.
+Your memory of what these files contain is stale — re-read every file the fix delta touches
+before judging it. Never clear a change against your recollection of how the file used to read."
+fi
+
 PROMPT="## Repository under review
 
 ${REPO} — kernel-enforced read-only. Your working directory is an ephemeral scratch
 space, not the repository: inspect the repository by absolute path and run git as
 \`git -C ${REPO} ...\`.
 
-$(cat "$BRIEF")$GRAPH_NOTE
+$(cat "$BRIEF")$PRIOR_NOTE$GRAPH_NOTE$RESUME_NOTE
 
 ## Reviewer contract
 
@@ -149,33 +209,74 @@ ERR="$(mktemp "${TMPDIR:-/tmp}/codex-review.XXXXXX.stderr")"
 SCRATCH="$(mktemp -d "${TMPDIR:-/tmp}/codex-review-scratch.XXXXXX")"
 trap 'rm -f "$ERR"; rm -rf "$SCRATCH"' EXIT
 
-# </dev/null: never block on interactive auth/TTY. The workspace-write sandbox covers the
-# scratch cwd and /tmp only; kernel-enforcement prevents any write to the repository.
+SID=""
+if [ "$RESUME" -eq 1 ] && [ -f "$SESSION_FILE" ]; then
+  SID="$(tr -d '[:space:]' <"$SESSION_FILE")"
+fi
+
+# </dev/null: never block on interactive auth/TTY. Codex writes its banner, progress and
+# diagnostics to stderr and the review itself to stdout, so the review is captured whole.
+# The workspace-write sandbox covers the scratch cwd and /tmp only; kernel-enforcement
+# prevents any write to the repository, in a resumed session as much as a fresh one.
+run_codex() {
+  if [ "$1" = "resume" ]; then
+    # No -C and no --sandbox on resume: the working root is the process cwd, and without the
+    # -c override the run inherits the user's configured sandbox_mode instead of this one.
+    ( cd "$SCRATCH" && codex exec resume "$SID" --skip-git-repo-check \
+        -c sandbox_mode='"workspace-write"' \
+        -c sandbox_workspace_write.network_access=true \
+        -c web_search=live \
+        "$PROMPT" </dev/null 2>"$ERR" )
+  else
+    codex exec --skip-git-repo-check \
+      --sandbox workspace-write \
+      -c sandbox_workspace_write.network_access=true \
+      -c web_search=live \
+      -C "$SCRATCH" \
+      "$PROMPT" </dev/null 2>"$ERR"
+  fi
+}
+
 set +e
-if [ -n "$OUT" ]; then
-  codex exec --skip-git-repo-check \
-    --sandbox workspace-write \
-    -c sandbox_workspace_write.network_access=true \
-    -c web_search=live \
-    -C "$SCRATCH" \
-    "$PROMPT" </dev/null >"$OUT" 2>"$ERR"
+if [ -n "$SID" ]; then
+  OUTPUT="$(run_codex resume)"
   STATUS=$?
-  SIZE=$(wc -c <"$OUT" 2>/dev/null || echo 0)
+  # A session Codex can no longer resume is a slower round, never a skipped one: the prompt
+  # already carries the brief and the prior rounds' reviews, so a fresh session reviews the
+  # same material without the context the resume would have saved.
+  if [ "$STATUS" -ne 0 ] || [ -z "$OUTPUT" ]; then
+    echo "codex-review: could not resume session $SID — running a fresh session instead" >&2
+    sed -n '1,10p' "$ERR" >&2 || true
+    OUTPUT="$(run_codex fresh)"
+    STATUS=$?
+  fi
 else
-  OUTPUT="$(codex exec --skip-git-repo-check \
-    --sandbox workspace-write \
-    -c sandbox_workspace_write.network_access=true \
-    -c web_search=live \
-    -C "$SCRATCH" \
-    "$PROMPT" </dev/null 2>"$ERR")"
+  OUTPUT="$(run_codex fresh)"
   STATUS=$?
-  SIZE=${#OUTPUT}
-  printf '%s\n' "$OUTPUT"
 fi
 set -e
+SIZE=${#OUTPUT}
 
 if [ "$STATUS" -ne 0 ] || [ "$SIZE" -eq 0 ]; then
   echo "codex-review: review FAILED (exit $STATUS, ${SIZE} bytes) — this is NOT a pass" >&2
   sed -n '1,10p' "$ERR" >&2 || true
   exit 1
+fi
+
+if [ -n "$OUT" ]; then
+  printf '%s\n' "$OUTPUT" >"$OUT"
+else
+  printf '%s\n' "$OUTPUT"
+fi
+
+# The id is recorded only after a review that succeeded, and a resumed run reports the same id
+# it was given, so the file keeps naming the session the next round should continue — including
+# the new one a fallback just created.
+if [ -n "$SESSION_FILE" ]; then
+  NEW_SID="$(grep -m1 -oE 'session id: [0-9a-fA-F-]{36}' "$ERR" | awk '{print $3}')"
+  if [ -n "$NEW_SID" ]; then
+    printf '%s\n' "$NEW_SID" >"$SESSION_FILE"
+  else
+    echo "codex-review: no session id in Codex output — the next round starts a fresh session" >&2
+  fi
 fi

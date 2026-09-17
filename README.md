@@ -214,7 +214,13 @@ Requires `claude` logged in, OS `python3` (3.10+), and the `codex` CLI logged in
    where agents write attachments, and defaults `CLAUDE_CODE_ARTIFACT_AUTO_OPEN=0` so Artifacts
    (the delivery surface for Codex reviews and other third-party content) publish without
    opening a browser. Re-running is always safe.
-4. Restart Claude Code sessions.
+4. Add `"Artifact"` to `permissions.allow` in `~/.claude/settings.local.json`, which the installer
+   does not own and never writes. Each review round publishes its raw `.md` as an Artifact the
+   moment it lands, and the sweep at the end of a review deletes review artifacts older than three
+   days; without the rule every one of those publishes and deletes stops for a permission prompt.
+   The grant covers the whole tool — publish, list, read, delete — because tool-action specifiers
+   do not exist for it.
+5. Restart Claude Code sessions.
 
 ### Code graph (optional)
 

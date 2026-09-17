@@ -214,8 +214,11 @@ target branch, and the review's diff/range — the merge-base diff `git diff
    requirement to verify the change against them, and the interactions between items that
    deserve scrutiny. Note which items already passed a per-item review so the reviewer
    spends its depth on the rest and on integration.
-2. Run `codex-review --brief <batch-brief.md> --repo <root> --out <review.md>` in the
-   background, ending your turn until it completes. Review quality degrades on oversized
+2. Run `codex-review --brief <batch-brief.md> --repo <root> --out <review.md>
+   --session-file <session.id>` in the background, ending your turn until it completes, and
+   publish the returned file as its own Artifact before adjudicating anything in it — naming,
+   timing, and the closing sweep follow `~/.claude/CLAUDE.md`. Re-review rounds add `--resume`
+   and one `--prior` per earlier round, per `references/review-loop.md`. Review quality degrades on oversized
    diffs: if the integrated change-set is large (roughly more than several hundred
    changed lines), split the review into coherent clusters of related items instead of
    one pass.
@@ -277,9 +280,9 @@ Long runs cross usage-limit windows; treat interruption as normal, not exception
   items land.
 - **The final report**: per-item summaries with their review status, the batch review
   verdict, rejected findings worth the user's attention, test results, and residual
-  risks. Publish each batch review's raw `.md` as a private Artifact, unedited, and link
-  it from the report; list the per-item review files the coders returned by path and
-  publish any the user asks for. Report coder summaries faithfully — do not soften
+  risks. Every review file — each batch round, and each per-item round a coder returned
+  by path, since coders hold no `Artifact` tool — is already published as it landed; the
+  report links them. Report coder summaries faithfully — do not soften
   flagged items — and present every finding that reaches the user with its concrete
   scenario: when it occurs, when it does not, and its effect, in plain terms rather
   than the reviewer's shorthand. It also carries the delivery protocol's record-keeping
