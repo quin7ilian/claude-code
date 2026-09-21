@@ -119,15 +119,15 @@ all.
 
 ### Vault notes
 
-- **The note standard is enforced at prompt level, deliberately.** `vault-note-standard.md` and
-  its templates define the shape of a specification or research note; the templates carry each
-  section's contract as HTML comments, so the rules travel in the artifact and survive compaction;
-  the skills express every write as a named operation and run a self-check at each checkpoint.
-  There is no linter and no Stop gate: checking prose structure mechanically needs CommonMark
-  container semantics to avoid false positives, and a gate that can block a turn on a false
-  positive teaches the agent to ignore it. A mechanical check is added only after a real,
-  observed drift that prompt-level enforcement failed to prevent — and only after a detailed
-  design agreement, never from a one-line ask.
+- **The note standard is enforced by prompting alone.** `vault-note-standard.md` and its
+  templates define the shape of a specification or research note — its sections, register-row
+  rules, formatting, and reasoning comments; the templates carry each section's contract as HTML
+  comments, so the rules travel in the artifact and survive compaction; the skills express every
+  write as a named operation and run a self-check, shape and density both, at each checkpoint.
+  There is no linter, checker script, or Stop gate, and none is added: checking a note's prose
+  mechanically is brittle — it needs CommonMark container semantics and still misjudges prose —
+  and a check that fires on a false positive teaches the agent to ignore it. Drift is answered
+  by sharpening the standard, the template comments, and the self-check.
 - **The standard governs two document types and stops there.** Specifications and research notes
   get the full shape; any other note type gets the frontmatter and tag contract only. A standard
   that tries to cover every kind of note cannot stay legible or be followed.

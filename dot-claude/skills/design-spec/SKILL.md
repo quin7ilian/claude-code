@@ -13,10 +13,18 @@ implementation stays outside this workflow.
 
 Every Design note follows `references/vault-note-standard.md` — read it before the first
 write. The rules that shape everything below: the body is current state only and never
-carries history; every change is a decision-log row the body references by id; the status
-block at the top is the note's whole state; the heading set is closed; tags follow the
-contract. Enforcement is the template and the checkpoint: each section's contract travels in
-the note as a comment, and every checkpoint runs the standard's self-check against it.
+carries history; every change is a decision-log row the body references by id, with fuller
+reasoning in that row's reasoning comment; a register row is the entry's current value in one
+sentence, never a changelog; sections are structured to scan, never walls of prose; the
+status block at the top is the note's whole state; the heading set is closed; tags follow the
+contract. Enforcement is the template and the checkpoint, never a script: each section's
+contract travels in the note as a comment, and every checkpoint runs the standard's
+self-check against it.
+
+Drift builds one decision at a time. The ruling that "just adds a clause" to a `W-n` cell,
+the answered question that keeps its argument, the `phase` that gains a commit — each is
+small, and together they make the note unreadable. Every write is held to the row and
+formatting rules on its own, not deferred to a later cleanup.
 
 ## Maintain write-through context
 
@@ -29,9 +37,10 @@ system in chat and write the specification when the discussion ends.
   tightly coupled group, present evidence and tradeoffs, obtain the user's direction.
 - The moment the user accepts, rejects, amends, or defers a point, perform **Record a
   decision** from the standard's operations table: one `D-n` row carrying the ask you put
-  and the ruling it earned; the affected body section rewritten to its new current state
+  and the ruling it earned, and its reasoning comment when two sentences cannot carry the
+  why; every affected body section and register row rewritten to its new current state
   with the old text removed, not annotated; the status block refreshed; any `Q-n` it
-  answers marked answered. One logical update.
+  answers reduced to its question and marked answered. One logical update.
 - A proposal the user has not ruled on is a `Q-n` row and a `[Q-n]` marker at the site that
   depends on it — never text blended into the agreed design.
 - The ask is the contract for the write. What you record may not reach past what you put to

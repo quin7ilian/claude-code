@@ -106,11 +106,19 @@ row. Tags are a contract: frontmatter only, one primary `type/*`, established `t
 `strategy/*` / `platform/*` values, a new value only after the user's ruling recorded as a `T-n`
 row.
 
-Enforcement is prompt-level, the way spec-kit does it: the templates carry each section's
+Legibility is held to the same contract, because it is what erodes as decisions accumulate. A
+register row is its entry's current value in one sentence, never a changelog of the rulings that
+touched it; body sections are structured to scan — a heading per part, bullets led by their
+subject, no paragraph over three sentences; `phase` and `next_step` are short labels, not progress
+reports. A decision row stays short, and the reasoning it cannot carry goes in an HTML comment
+beneath the log, so a note stays readable in Obsidian and self-contained for an agent picking the
+work up without the session that produced it.
+
+Enforcement is prompting alone, the way spec-kit does it: the templates carry each section's
 contract as HTML comments (invisible in Obsidian, present on every agent re-read), every write is
 one of the standard's named operations, and the checkpoint operation — before compaction, before a
-subagent batch, at handoff — re-reads the outline and status block against the template and fixes
-drift. Nothing is mechanical. Vagueness and testability
+subagent batch, at handoff — re-reads the note against the template, for shape and for density, and
+fixes drift. No script checks a note. Vagueness and testability
 of requirements are judgment, not shape: the handoff review reads the `R-n`/`A-n` registers with a
 requirements-quality lens and reports findings for the user's ruling.
 

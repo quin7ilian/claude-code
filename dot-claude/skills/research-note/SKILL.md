@@ -16,10 +16,12 @@ Every Research note follows
 write. The rules that shape everything below: §3 Synthesis holds the current conclusions
 and is rewritten in place as evidence moves; what was run is an `X-n` row in the experiment
 log and what changed scope or method is a `D-n` row in the decision log, never a new dated
-section; the status block at the top is the note's whole state; the heading set is closed;
-tags follow the contract. Enforcement is the template and the checkpoint: each section's
-contract travels in the note as a comment, and every checkpoint runs the standard's
-self-check against it.
+section, with fuller reasoning in that row's reasoning comment; a register row or finding is
+its current value in one sentence, never a changelog; sections are structured to scan, never
+walls of prose; the status block at the top is the note's whole state; the heading set is
+closed; tags follow the contract. Enforcement is the template and the checkpoint, never a
+script: each section's contract travels in the note as a comment, and every checkpoint runs
+the standard's self-check against it.
 
 ## Maintain write-through context
 

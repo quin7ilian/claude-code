@@ -33,14 +33,20 @@ Both note types share the same mechanics; they differ only in their section set.
 ---
 tags: [⟨type/…⟩, ⟨topic/…⟩]
 status: ⟨enum⟩
-phase: ⟨one line — the stage the work is in⟩
-next_step: ⟨one line — the single next action⟩
+phase: ⟨at most five words — the stage the work is in⟩
+next_step: ⟨at most fifteen words — the single next action⟩
 updated: ⟨YYYY-MM-DD⟩
 ---
 ```
 
 `status` enums — specification: `draft` · `in-review` · `ratified` · `implementing` ·
 `parked` · `done`; research: `active` · `parked` · `concluded`.
+
+`phase` is a label, not a report: `oracle drafting`, `W-4 in review`, `awaiting merge`. At most
+five words. `next_step` is one imperative of at most fifteen words. Both may name a register
+id; neither carries a commit, a PR number, a date, or an account of what happened — that is
+the decision log's, and a property that narrates progress grows a longer narration at every
+step.
 
 ### Title and status block
 
@@ -74,8 +80,8 @@ rewritten in the same write as any change it summarises.
 | 8 | Implementation sequence | Table of `W-n` rows: item · tier · status · depends on · covers `R-n` · stop conditions. Tiers per `complexity-tiers.md`; status `todo` · `in-progress` · `done` · `blocked` · `dropped`. |
 | 9 | Premise register | Table of `P-n` rows: claim · state (`verified` · `awaiting verification` · `disproven`) · evidence, or what was tried, what blocks it, what unblocks it. |
 | 10 | Open questions | Table of `Q-n` rows: question · what it blocks · status (`open` · `answered → D-n`). |
-| 11 | Decision log | Table of `D-n` rows: date · who decided (`owner` · `orchestrator` · `orchestrator → D-m`) · the ask as it was put to the user · decision · supersedes (`D-m` or —) · rationale and rejected alternatives in one or two lines. Append-only. |
-| — | Appendix A… | Bulky evidence referenced from the body by anchor. Any number, lettered, each titled `Appendix X — ⟨title⟩`. |
+| 11 | Decision log | Table of `D-n` rows: date · who decided (`owner` · `orchestrator` · `orchestrator → D-m`) · the ask as it was put to the user · decision in one sentence · supersedes (`D-m` or —) · rationale and rejected alternatives in at most two sentences. Fuller reasoning goes in the row's reasoning comment. Append-only. |
+| — | Appendix A… | Reference material the body cites by anchor, all of it current: evidence, measurements, rule tables, work-item briefs. Never a record — an appendix that tracks work, questions, decisions, implementation, or rulings over time is history, and history lives in the logs. Any number, lettered, each titled `Appendix X — ⟨title⟩`. |
 
 ### Section set — research note (`Research/`)
 
@@ -89,7 +95,7 @@ rewritten in the same write as any change it summarises.
 | 6 | Open questions | Table of `Q-n` rows: question · why it matters · status (`open` · `answered → D-n` or `answered → X-n`). |
 | 7 | Runbook | How to reproduce or resume: scripts, commands, data locations, parameters. One copy, always current. |
 | 8 | Experiment log | Table of `X-n` rows: date · what was run · result · which `F-n` it changed. Append-only. |
-| 9 | Decision log | Table of `D-n` rows: date · who decided (`owner` · `orchestrator` · `orchestrator → D-m`) · the ask as it was put to the user · decision (scope correction, method change, tag introduction) · supersedes · rationale. Append-only. |
+| 9 | Decision log | Table of `D-n` rows: date · who decided (`owner` · `orchestrator` · `orchestrator → D-m`) · the ask as it was put to the user · decision in one sentence (scope correction, method change, tag introduction) · supersedes · rationale in at most two sentences. Fuller reasoning goes in the row's reasoning comment. Append-only. |
 | — | Appendix A… | As for specifications. |
 
 ### Closed heading set
@@ -99,6 +105,25 @@ inside a section as long as they name a part of the current design or current fi
 never a date, a revision, a correction, or a reading instruction. Adding an H2 is a
 deviation from the standard, not an extension of the note; content that does not fit a
 section goes to an appendix or a separate note.
+
+### Formatting
+
+A section is written to be scanned, not read through. A reviewer finds the part they need by
+its heading and takes in each point from its first words.
+
+- **One H3 per part.** A component, a behaviour, a concern, each under its own H3. Beneath
+  it, one or two sentences on what the part is and why it exists, then its properties,
+  invariants, failure modes, and constraints as bullets.
+- **Bullets lead with their subject.** A bold lead-in names the property; the text after it
+  states what holds. Conditions and exceptions are sub-bullets, never a clause chain.
+- **A paragraph is at most three sentences.** Anything longer has parts, and parts are
+  bullets.
+- **Three or more parallel items are a list**, or a table when they share attributes.
+- **One claim per sentence.**
+
+§1 Summary is the exception: at most ten lines of plain prose, because a reviewer who stops
+there reads it as a paragraph. The registers and logs are tables and follow the row rules
+below.
 
 ### Identifiers and cross-references
 
@@ -111,6 +136,31 @@ referenced anywhere must exist in its register. Where this standard lists the le
 a register column — `W` status, `P` state, `Q` and `RQ` status, `F` confidence, `D` decided
 by — a cell holding anything else is an error. Every `R-n` is covered by at least one `W-n`
 and at least one `A-n`; every `W-n` names at least one `R-n`; every `A-n` names one `O-n`.
+
+### Register rows
+
+A register row is the entry's current value — what is true, required, or unresolved now —
+and nothing about how it came to be. A cell that absorbs every ruling that touched it becomes
+a changelog nobody can read and a contract nobody can find.
+
+- **Text cells are one sentence of at most 25 words.** The exceptions are an `O-n` row's
+  formula and authority, which are the contract itself and stay whole in the row.
+- **Reference cells hold ids only.** Covers, depends on, stop conditions, blocks, oracle,
+  bears on: ids or `—`, no prose.
+- **A row never narrates.** No "per D-n", "extended", "reshaped", "recommendation", no trail
+  of commits. A row cites a `D-n` only where the citation is its authority (an
+  `O-n` authority, a requirement a ruling created), never to record that it changed.
+- **`W-n` status** is the enum, plus one commit or PR reference once `done`.
+- **`Q-n` question** is the question alone. The proposal and its argument belong in the ask
+  put to the user; once answered, the row keeps only the question and `answered → D-n`.
+- **`P-n` evidence** is a citation — `file:line`, a command, a document section — or an
+  appendix anchor, never a narrative of the check.
+- **Research `F-n`** is one sentence stating the finding, with its confidence and `E-n` ids;
+  qualifications are sub-bullets beneath it.
+
+Detail that does not fit a cell is design, and design has a home: the part's H3 in §5–6
+(research §3), or a work-item brief in an appendix the row cites. It never goes into the
+cell.
 
 ### Authority, the ask, and the ruling
 
@@ -185,13 +235,13 @@ specification in `ratified`, `implementing`, or `done` carries no `[Q-n]` in its
 
 ### History vocabulary
 
-In body prose — every section except the logs, the status block, and table rows — the
-following do not appear: dates; `previously`, `formerly`, `superseded`, `supersedes`,
-`decided`, `as of`, `start here`, `read this first`, `resume state`, `ratified revision`,
-`CORRECTION`; the ⚠️ glyph. The list is deliberately short and unambiguous — a word that
-also has an everyday current-state meaning is not on it. A date inside a table row (a verification date in §3, a
-source date in §4) is evidence and is allowed. The words are legal in log rows, where they
-are the point.
+In the body — prose and register rows alike, every section except the logs and the status
+block — the following do not appear: dates; `previously`, `formerly`, `superseded`,
+`supersedes`, `decided`, `as of`, `start here`, `read this first`, `resume state`, `ratified
+revision`, `CORRECTION`; the ⚠️ glyph. The list is deliberately short and unambiguous — a word
+that also has an everyday current-state meaning is not on it. A date in an evidence cell (a
+verification date in §3, a source date in research §4) is evidence and is allowed. The words
+are legal in log rows and reasoning comments, where they are the point.
 
 ### Placeholders
 
@@ -202,15 +252,29 @@ header row — rather than saving a placeholder.
 
 ### Comments
 
-Template comments (`<!-- … -->`) are kept: Obsidian hides them in reading view and every
-agent re-read sees the section's contract. The agent may add its own comments beside a
-section as working memory — what was verified against what, what a checkpoint left
-unfinished, where a resume should look first — and they survive compaction the way the
-template's do. Two rules keep that channel from becoming the scratchpad the body is not: a
-comment is current state too, rewritten at the next checkpoint rather than appended to;
-and nothing a reviewer needs to judge the design lives only in a comment — a decision, a
-premise, a question, a finding is in visible text, and a comment may point at it but never
-replace it.
+Comments (`<!-- … -->`) are hidden in reading view and seen by every agent re-read, which
+makes them the note's channel for what a reader does not need and a resuming agent does.
+There are three kinds.
+
+- **Template comments** carry each section's contract. They are kept as instantiated.
+- **Working notes** sit beside a section: what was verified against what, what a checkpoint
+  left unfinished, where a resume should look first. They are current state, rewritten at the
+  next checkpoint rather than appended to.
+- **Reasoning comments** hold what a decision row's two sentences cannot: the constraints
+  the user stated, the alternatives weighed and why each lost, the evidence consulted, and
+  what a later agent must understand to apply or revisit the ruling. They sit directly after
+  the decision-log table, one block per `D-n` that needs one, in id order, each opened
+  `D-n —`. Each is written with its row in the same **Record a decision** and is append-only
+  like the log; a ruling that displaces it gets its own. A row whose two sentences carry
+  everything gets no comment.
+
+Reasoning comments are what make a note self-contained: an agent holding the note and nothing
+else can read why every ruling stands and pick the work up without the session that produced
+it. They are structured like the body — short paragraphs and bullets, never a wall.
+
+One rule covers all three: nothing a reviewer needs to judge the design lives only in a
+comment. A decision, a premise, a question, a finding is in visible text; a comment explains
+or points at it and never replaces it.
 
 ### Body budget
 
@@ -218,10 +282,12 @@ Soft, and a tripwire rather than a cut. Specification: sections 1–10 ≤ 2,500
 Research: section 3 ≤ 1,500 words. Counted on visible text only — tables and diagrams count,
 because the reviewer reads them; comments do not. Logs and appendices are exempt. The status
 block reports the count so a reviewer sees the note's size up front. Over budget means the
-next checkpoint asks one question of every block in the body: is this design, or is it
-evidence and bulk that belongs in an appendix or a linked note? Bulk moves; design stays,
-and a body that is over budget because all of it is design is correct at that size. The
-budget never causes a detail to be omitted, and never moves history out of the logs.
+next checkpoint first brings every block within the formatting and register-row rules — a
+bloated cell or a wall of prose is not design at its natural size — and then asks one
+question of what remains: is this design, or is it evidence and bulk that belongs in an
+appendix or a linked note? Bulk moves; design stays, and a body still over budget after both
+steps is correct at that size. The budget never causes a detail to be omitted, and never
+moves history out of the logs.
 
 ## Tags
 
@@ -251,7 +317,7 @@ its tests.
 | Operation | What it writes, in one logical update |
 |---|---|
 | **Instantiate** | Copy the template for the note type, fill the frontmatter, the status block, and §1–2, replace every remaining placeholder with real content or nothing, save. |
-| **Record a decision** | Read the decision log first; if the ruling displaces a `D-m` the ask did not name, nothing is written and the override returns as its own ask. Otherwise: one `D-n` row naming who decided it, carrying the ask and the ruling it earned, and reaching no further than the ask did · the affected body section rewritten to its new current state (the old text removed, not annotated) · the status block refreshed · any `Q-n` the decision answers marked `answered → D-n`. A decision the agent made itself is recorded `orchestrator` and reported to the user in the same turn — never dressed as a ruling, never left for them to discover. A scope correction, a method change, or a resolved question in a research note is a decision. |
+| **Record a decision** | Read the decision log first; if the ruling displaces a `D-m` the ask did not name, nothing is written and the override returns as its own ask. Otherwise: one `D-n` row naming who decided it, carrying the ask and the ruling it earned, and reaching no further than the ask did · its reasoning comment when the reasoning exceeds the row · every affected body section and register row rewritten to its new current state — the old text removed, not annotated, so the row reads as if the decision had always been the design · the status block refreshed · any `Q-n` the decision answers reduced to its question and marked `answered → D-n`. A decision the agent made itself is recorded `orchestrator` and reported to the user in the same turn — never dressed as a ruling, never left for them to discover. A scope correction, a method change, or a resolved question in a research note is a decision. |
 | **Record an oracle** (spec) | One `O-n` row: the rule, its formula or invariant, its authority, and a worked example computed from that authority and not from the design · every `A-n` it serves updated to name it · every field, enum member and default it stops requiring removed from §5–6 in the same update. An oracle only the user can settle is a `Q-n` first and lands on the ruling. |
 | **Verify a premise** (spec) | The `P-n` row's state and evidence updated · the status block's awaiting count refreshed · when the state becomes `disproven`, the decision resting on it reopens as a `Q-n`. |
 | **Record a finding** (research) | One `X-n` row if something was run · the `E-n` rows it produced · the affected `F-n` rewritten with its new confidence · the status block refreshed. |
@@ -268,9 +334,9 @@ named path.
 
 ## The self-check
 
-Enforcement is prompt-level: the template carries each section's contract as a comment the
-agent sees on every re-read, the operations above make the current-state shape the easiest
-path, and the **Checkpoint** operation is the check. At every checkpoint, and always before
+Enforcement is prompt-level only: the template carries each section's contract as a comment
+the agent sees on every re-read, the operations above make the current-state shape the
+easiest path, and the **Checkpoint** operation is the check. No script checks a note. At every checkpoint, and always before
 handoff or close, read the note's heading outline and status block against the template and
 fix drift before continuing: the H2 set and order; frontmatter fields; every value in the
 status block; every id the body references existing in its register; every `R-n` covered
@@ -279,9 +345,24 @@ not the implementation; every field, enum member and default in §5–6 citing t
 requires it; every `D-n` naming who decided it and carrying an ask its decision
 does not reach past; no `orchestrator` row in a specification at `ratified` or beyond; every
 displaced `D-m` named in the `Supersedes` cell of the row that displaced it; no date or
-history vocabulary in body prose; no `⟨` left; tags per the contract. The reviewer's test
-is the standard's: a principal engineer reads Summary → status block → Design and can
-review without opening the log.
+history vocabulary in body prose or register rows; no `⟨` left; tags per the contract.
+
+Then read for density, because shape can pass while legibility fails, and this is the drift
+that builds as decisions accumulate:
+
+- `phase` within five words and `next_step` within fifteen, neither narrating progress.
+- Every register row within the row rules: one-sentence text cells, ids in reference cells,
+  no narration, no answered question still carrying its argument.
+- Every decision row a one-sentence decision and a rationale of at most two sentences, with
+  anything longer in its reasoning comment.
+- Every body section structured per the formatting rules: H3 per part, bullets led by their
+  subject, no paragraph over three sentences.
+- Every appendix reference material, none of them a record.
+
+A write that grew a cell or a paragraph is rewritten to the rules in the same checkpoint. The
+reviewer's test is the standard's: a principal engineer reads Summary → status block → Design
+and can review without opening the log, and an agent holding only the note can resume the
+work.
 
 Vagueness and testability of requirements are judgment, not shape: the handoff review reads
 the `R-n`, `O-n` and `A-n` registers with a requirements-quality lens — including whether each

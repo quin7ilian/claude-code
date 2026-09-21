@@ -1,8 +1,8 @@
 ---
 tags: [type/spec, ⟨topic/…⟩]
 status: draft
-phase: ⟨stage the work is in⟩
-next_step: ⟨the single next action⟩
+phase: ⟨≤5 words — the stage⟩
+next_step: ⟨≤15 words — the single next action⟩
 updated: ⟨YYYY-MM-DD⟩
 ---
 
@@ -16,7 +16,10 @@ updated: ⟨YYYY-MM-DD⟩
 
 <!-- Standard: ~/.claude/skills/design-spec/references/vault-note-standard.md
      The body (§1–10) is current state only. History goes to §11 by row; the body
-     references rows by id. Keep these comments — Obsidian hides them in reading view. -->
+     references rows by id. Register rows are current values in one sentence, never a
+     changelog. Sections are built to scan: H3 per part, bullets led by their subject, no
+     paragraph over three sentences. phase ≤5 words, next_step ≤15, neither narrates.
+     Keep these comments — Obsidian hides them in reading view. -->
 
 ## 1. Summary
 
@@ -27,9 +30,12 @@ updated: ⟨YYYY-MM-DD⟩
 ## 2. Problem, goals, non-goals
 
 <!-- The problem in plain terms; goals as requirement rows; explicit non-goals.
-     Every R-n is covered by at least one W-n (§8) and one A-n (§7). -->
+     Every R-n is covered by at least one W-n (§8) and one A-n (§7).
+     Each requirement is one sentence of at most 25 words. -->
 
-⟨problem⟩
+⟨one or two sentences: the problem⟩
+
+- **⟨Force or symptom⟩** — ⟨what it costs⟩
 
 | Id | Requirement |
 |---|---|
@@ -62,18 +68,28 @@ updated: ⟨YYYY-MM-DD⟩
      Alternatives and their rejection are D-n rows, not paragraphs here.
      Every field, enum member, parameter and default cites the O-n (§7) that requires it;
      a value an oracle derives is never a configurable field.
-     H3s name parts of the design — never a date, revision, or reading instruction. -->
+     One H3 per part — never a date, revision, or reading instruction. Under it, one or
+     two sentences on what the part is, then bullets led by their subject; conditions are
+     sub-bullets. No paragraph over three sentences. -->
 
-⟨design⟩
+### ⟨Component⟩
+
+⟨one or two sentences: what it is and why it exists⟩
+
+- **⟨Invariant⟩** — ⟨what holds⟩ (⟨O-n⟩)
+- **⟨Failure mode⟩** — ⟨what happens, what the caller observes⟩
 
 ## 6. Interfaces and behaviour
 
 <!-- Contracts, state transitions, failure and operational behaviour, security and
      privacy boundaries, migration, observability — those that apply. Omit what does not.
      A behaviour example here is worked from its O-n, never from the intended code.
-     Every surface a caller can set cites the O-n that requires it. -->
+     Every surface a caller can set cites the O-n that requires it.
+     Structured like §5: H3 per interface or behaviour, bullets beneath. -->
 
-⟨interfaces⟩
+### ⟨Interface or behaviour⟩
+
+- **⟨Contract, transition, or failure⟩** — ⟨what holds⟩ (⟨O-n⟩)
 
 ## 7. Validation and acceptance
 
@@ -87,7 +103,10 @@ updated: ⟨YYYY-MM-DD⟩
 
      A-n is one row per observable outcome, each naming the O-n its expected result comes
      from. Concrete values, never prose — an implementer derives tests from these rows, and
-     a row with no oracle passes green when the design itself is wrong. -->
+     a row with no oracle passes green when the design itself is wrong.
+
+     Rows are current values: text cells one sentence of ≤25 words (an O-n's formula and
+     authority stay whole), reference cells ids only, no narration of how a row changed. -->
 
 | Id | Rule | Formula or invariant | Authority | Worked example |
 |---|---|---|---|---|
@@ -100,7 +119,10 @@ updated: ⟨YYYY-MM-DD⟩
 ## 8. Implementation sequence
 
 <!-- Tiers per ~/.claude/skills/implement/references/complexity-tiers.md.
-     Status: todo · in-progress · done · blocked · dropped. -->
+     Status: todo · in-progress · done · blocked · dropped; once done, plus one commit or
+     PR reference. Item: one sentence of ≤25 words naming the deliverable — its detail is a
+     work-item brief in an appendix, never the cell. Depends on, Covers, Stop conditions:
+     ids only. A ruling that reshapes an item rewrites the row; it never extends it. -->
 
 | Id | Item | Tier | Status | Depends on | Covers | Stop conditions |
 |---|---|---|---|---|---|---|
@@ -110,7 +132,9 @@ updated: ⟨YYYY-MM-DD⟩
 
 <!-- Load-bearing claims the design rests on. State: verified · awaiting verification ·
      disproven. Evidence for verified; what was tried, what blocks, what unblocks for
-     awaiting. There is no assumed-by-choice state. -->
+     awaiting. There is no assumed-by-choice state.
+     Claim: one sentence of ≤25 words. Evidence: a citation (file:line, command, document
+     section) or an appendix anchor — never a narrative of the check. -->
 
 | Id | Claim | State | Evidence / blocker |
 |---|---|---|---|
@@ -118,7 +142,9 @@ updated: ⟨YYYY-MM-DD⟩
 
 ## 10. Open questions
 
-<!-- Reference from the body as [Q-n]. Status: open · answered → D-n. -->
+<!-- Reference from the body as [Q-n]. Status: open · answered → D-n.
+     Question: the question alone, one sentence. The proposal and its argument belong in the
+     ask put to the user, not the row. Blocks: ids only. -->
 
 | Id | Question | Blocks | Status |
 |---|---|---|---|
@@ -126,7 +152,11 @@ updated: ⟨YYYY-MM-DD⟩
 ## 11. Decision log
 
 <!-- Append-only. One row per decision, correction, scope change, or tag introduction
-     (T-n rows live here too). Rationale and rejected alternatives in one or two lines.
+     (T-n rows live here too). Decision in one sentence; rationale and rejected alternatives
+     in at most two. Reasoning that needs more — the constraints stated, the alternatives
+     weighed, the evidence consulted, what a later agent must understand — goes in a
+     reasoning comment below the table, one block per D-n in id order, opened "D-n —",
+     written with its row and append-only like it. The note must be resumable from itself.
      Decided by is owner (the user ruled), orchestrator (the agent's own call, unratified),
      or orchestrator → D-m (its call, ratified later by that row). Every row has one.
      Asked is the ask as it was put to the user, one line, verbatim in substance — the

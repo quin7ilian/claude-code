@@ -1,8 +1,8 @@
 ---
 tags: [type/research, ⟨topic/…⟩]
 status: active
-phase: ⟨stage the research is in⟩
-next_step: ⟨the single next action⟩
+phase: ⟨≤5 words — the stage⟩
+next_step: ⟨≤15 words — the single next action⟩
 updated: ⟨YYYY-MM-DD⟩
 ---
 
@@ -16,8 +16,10 @@ updated: ⟨YYYY-MM-DD⟩
 
 <!-- Standard: ~/.claude/skills/design-spec/references/vault-note-standard.md
      §3 is the current synthesis, rewritten in place as evidence moves. What was run goes
-     to §8 by row; scope and method changes to §9 by row. Keep these comments — Obsidian
-     hides them in reading view. -->
+     to §8 by row; scope and method changes to §9 by row. Register rows are current values
+     in one sentence, never a changelog. Sections are built to scan: H3 per theme, bullets
+     led by their subject, no paragraph over three sentences. phase ≤5 words, next_step ≤15,
+     neither narrates. Keep these comments — Obsidian hides them in reading view. -->
 
 ## 1. Summary
 
@@ -27,8 +29,9 @@ updated: ⟨YYYY-MM-DD⟩
 
 ## 2. Questions and scope
 
-<!-- Research questions as rows; status: open · answered · dropped. Then scope, time
-     horizon, constraints, and what would make the work sufficiently complete. -->
+<!-- Research questions as rows, each one sentence; status: open · answered · dropped.
+     Then scope, time horizon, constraints, and what would make the work sufficiently
+     complete — as bullets. -->
 
 | Id | Question | Status |
 |---|---|---|
@@ -39,16 +42,20 @@ updated: ⟨YYYY-MM-DD⟩
 ## 3. Synthesis
 
 <!-- Current conclusions only. Each finding carries a confidence — established · probable ·
-     contested · speculative — and the E-n rows it rests on. Rewrite a finding when its
-     evidence changes; never append a dated update beneath it. -->
+     contested · speculative — and the E-n rows it rests on. The finding is one sentence;
+     its qualifications are sub-bullets beneath it. Group findings under an H3 per theme
+     once there are several. Rewrite a finding when its evidence changes; never append a
+     dated update beneath it. -->
 
-**F-1** (⟨confidence⟩; E-1) — ⟨finding⟩
+**F-1** (⟨confidence⟩; E-1) — ⟨finding, one sentence⟩
+
+- ⟨qualification or condition⟩
 
 ## 4. Evidence
 
-<!-- One row per source. URL or file:line; the source's own date; what it shows; which
-     findings it supports or contradicts. A search snippet or another agent's summary is
-     not evidence. -->
+<!-- One row per source. URL or file:line; the source's own date; what it shows, in one
+     sentence of ≤25 words; which findings it supports or contradicts, as ids. A search
+     snippet or another agent's summary is not evidence. -->
 
 | Id | Source | Date | Shows | Bears on |
 |---|---|---|---|---|
@@ -63,7 +70,8 @@ updated: ⟨YYYY-MM-DD⟩
 
 ## 6. Open questions
 
-<!-- Reference from the body as [Q-n]. Status: open · answered → D-n / X-n. -->
+<!-- Reference from the body as [Q-n]. Status: open · answered → D-n / X-n.
+     Question: the question alone, one sentence; why it matters: one sentence. -->
 
 | Id | Question | Why it matters | Status |
 |---|---|---|---|
@@ -85,6 +93,9 @@ updated: ⟨YYYY-MM-DD⟩
 ## 9. Decision log
 
 <!-- Append-only. Scope corrections, method changes, tag introductions (T-n rows).
+     Decision in one sentence; rationale in at most two. Reasoning that needs more goes in
+     a reasoning comment below the table, one block per D-n in id order, opened "D-n —",
+     written with its row and append-only like it. The note must be resumable from itself.
      Decided by is owner (the user ruled), orchestrator (the agent's own call, unratified),
      or orchestrator → D-m (its call, ratified later by that row). Every row has one.
      Asked is the ask as it was put to the user, one line, verbatim in substance — the
